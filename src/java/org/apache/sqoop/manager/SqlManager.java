@@ -684,10 +684,10 @@ public abstract class SqlManager
        importer = new AccumuloImportJob(opts, context);
     } else if ( opts.getKuduTable() != null) {
     	// Import to Kudu
-    	if (!KuduUtil.isKuduJarPresent()) {
+    	/*if (!KuduUtil.isKuduJarPresent()) {
     		throw new ImportException("Kudu jars are not present in "
     		 + "classpath, cannot import to Kudu");
-    	}
+    	}*/
     	importer = new KuduImportJob(opts, context);
     } else {
       // Import to HDFS.

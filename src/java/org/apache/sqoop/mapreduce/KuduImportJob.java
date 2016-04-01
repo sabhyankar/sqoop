@@ -30,6 +30,7 @@ import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.OutputFormat;
 import org.apache.sqoop.kudu.KuduMutationProcessor;
+import org.apache.sqoop.kudu.KuduUtil;
 import org.kududb.client.KuduClient;
 import org.kududb.client.KuduTable;
 
@@ -49,11 +50,13 @@ public class KuduImportJob extends DataDrivenImportJob {
 
 	public static final Log LOG = LogFactory.getLog(KuduImportJob.class
 			.getName());
+	
+	protected static SqoopOptions opts;
 
 	public KuduImportJob(final SqoopOptions opts,
 			final ImportJobContext importContext) {
 		super(opts, importContext.getInputFormat(), importContext);
-
+		this.opts = opts;
 	}
 
 	@Override
@@ -103,6 +106,9 @@ public class KuduImportJob extends DataDrivenImportJob {
 		Configuration conf = job.getConfiguration();
 		String tableName = conf.get(KuduMutationProcessor.TABLE_NAME_KEY);
 		String masterUrl = conf.get(KuduMutationProcessor.KUDU_MASTER_KEY);
+		
+		// Add Jars
+		KuduUtil.addJars(job, opts);
 
 		if (null == tableName) {
 			throw new ImportException(

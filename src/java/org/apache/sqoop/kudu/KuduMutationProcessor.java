@@ -114,7 +114,7 @@ public class KuduMutationProcessor implements Closeable, Configurable,
 							try {
 								kuduSession.apply(insert);
 							} catch (Exception e) {
-								throw new IOException("Error inserting a row");
+								throw new IOException("Error inserting a row" + e.getMessage());
 							}
 						} else {
 							throw new IOException("Kudu session not initialized");
