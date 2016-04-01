@@ -917,7 +917,8 @@ public abstract class BaseSqoopTool extends com.cloudera.sqoop.tool.SqoopTool {
 	        .withDescription("If specified, create missing Kudu tables")
 	        .withLongOpt(KUDU_CREATE_TABLE_ARG)
 	        .create());
-	    kuduOpts.addOption(OptionBuilder
+	    kuduOpts.addOption(OptionBuilder.withArgName("master_url")
+	    		.hasArg()
 	    		.withDescription("Kudu Master URL to connect to")
 	    		.withLongOpt(KUDU_MASTER_URL_ARG)
 	    		.create());
