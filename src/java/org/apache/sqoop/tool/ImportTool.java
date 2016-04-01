@@ -549,7 +549,7 @@ public class ImportTool extends com.cloudera.sqoop.tool.BaseSqoopTool {
   /**
    * @return the output path for the imported files;
    * in append mode this will point to a temporary folder.
-   * if importing to hbase, this may return null.
+   * if importing to hbase or Kudu, this may return null.
    */
   private Path getOutputPath(SqoopOptions options, String tableName) {
     return getOutputPath(options, tableName, options.isAppendMode()
@@ -558,7 +558,7 @@ public class ImportTool extends com.cloudera.sqoop.tool.BaseSqoopTool {
 
   /**
    * @return the output path for the imported files;
-   * if importing to hbase, this may return null.
+   * if importing to hbase or Kudu, this may return null.
    */
   private Path getOutputPath(SqoopOptions options, String tableName, boolean temp) {
     // Get output directory
@@ -818,6 +818,7 @@ public class ImportTool extends com.cloudera.sqoop.tool.BaseSqoopTool {
     toolOptions.addUniqueOptions(getHCatalogOptions());
     toolOptions.addUniqueOptions(getHCatImportOnlyOptions());
     toolOptions.addUniqueOptions(getAccumuloOptions());
+    toolOptions.addUniqueOptions(getKuduOptions());
 
     // get common codegen opts.
     RelatedOptions codeGenOpts = getCodeGenOpts(allTables);
@@ -1006,6 +1007,7 @@ public class ImportTool extends com.cloudera.sqoop.tool.BaseSqoopTool {
       applyHBaseOptions(in, out);
       applyHCatalogOptions(in, out);
       applyAccumuloOptions(in, out);
+      applyKuduOptions(in,out);
 
     } catch (NumberFormatException nfe) {
       throw new InvalidOptionsException("Error: expected numeric argument.\n"
@@ -1152,6 +1154,7 @@ public class ImportTool extends com.cloudera.sqoop.tool.BaseSqoopTool {
     validateHiveOptions(options);
     validateHCatalogOptions(options);
     validateAccumuloOptions(options);
+    validateKuduOptions(options);
   }
 }
 

@@ -52,9 +52,9 @@ under the License.
     <conf name="hadoop100" visibility="private"
       extends="common,runtime,avro,hbase${hbaseprofile},hcatalog${hcatprofile},accumulo" />
     <conf name="hadoop200" visibility="private"
-      extends="common,runtime,avro,hbase${hbaseprofile},hcatalog${hcatprofile},accumulo" />
+      extends="common,runtime,avro,hbase${hbaseprofile},hcatalog${hcatprofile},accumulo,kudu" />
     <conf name="hadoop210" visibility="private"
-      extends="common,runtime,avro,hbase${hbaseprofile},hcatalog${hcatprofile},accumulo" />
+      extends="common,runtime,avro,hbase${hbaseprofile},hcatalog${hcatprofile},accumulo,kudu" />
 
     <conf name="test" visibility="private" extends="common,runtime"/>
     <conf name="hadoop23test" visibility="private" extends="test,hadoop23" />
@@ -78,6 +78,9 @@ under the License.
 
     <!-- configuration for running rat -->
     <conf name="releaseaudit" visibility="private" />
+
+    <!-- Configuration for kudu -->
+    <conf name="kudu" visibility="private" />
   </configurations>
 
   <publications>
@@ -325,6 +328,11 @@ under the License.
       <exclude org="org.mortbay.jetty" module="jetty"/>
       <exclude org="org.jboss.netty" module="netty"/>
       <exclude org="org.apache.velocity" module="velocity"/>
+    </dependency>
+
+    <dependency org="org.kududb" name="kudu-client"
+      rev="${kudu.version}" conf="kudu->default">
+      <artifact name="kudu-client" type="jar" />
     </dependency>
 
     <exclude org="org.apache.hadoop" module="avro"/>

@@ -206,6 +206,11 @@ public abstract class BaseSqoopTool extends com.cloudera.sqoop.tool.SqoopTool {
   public static final String ACCUMULO_INSTANCE_ARG = "accumulo-instance";
   public static final String ACCUMULO_USER_ARG = "accumulo-user";
   public static final String ACCUMULO_PASSWORD_ARG = "accumulo-password";
+  
+  // Kudu arguments.
+  public static final String KUDU_TABLE_ARG = "kudu-table";
+  public static final String KUDU_CREATE_TABLE_ARG = "kudu-create-table";
+  public static final String KUDU_MASTER_URL_ARG = "kudu-master-url";
 
 
   // Arguments for the saved job management system.
@@ -900,6 +905,40 @@ public abstract class BaseSqoopTool extends com.cloudera.sqoop.tool.SqoopTool {
     }
   }
 
+  protected RelatedOptions getKuduOptions() {
+	    RelatedOptions kuduOpts =
+	        new RelatedOptions("Kudu arguments");
+	    kuduOpts.addOption(OptionBuilder.withArgName("table")
+	        .hasArg()
+	        .withDescription("Import to <table> in Kudu")
+	        .withLongOpt(KUDU_TABLE_ARG)
+	        .create());	 
+	    kuduOpts.addOption(OptionBuilder
+	        .withDescription("If specified, create missing Kudu tables")
+	        .withLongOpt(KUDU_CREATE_TABLE_ARG)
+	        .create());
+	    kuduOpts.addOption(OptionBuilder
+	    		.withDescription("Kudu Master URL to connect to")
+	    		.withLongOpt(KUDU_MASTER_URL_ARG)
+	    		.create());
+
+	    return kuduOpts;
+	  }
+
+protected void applyKuduOptions(CommandLine in, SqoopOptions out) {
+	    if (in.hasOption(KUDU_TABLE_ARG)) {
+	      out.setKuduTable(in.getOptionValue(KUDU_TABLE_ARG));
+	    }
+
+	    
+	    if (in.hasOption(KUDU_CREATE_TABLE_ARG)) {
+	      out.setCreateKuduTable(true);
+	    }
+	    
+	    if (in.hasOption(KUDU_MASTER_URL_ARG)) {
+	    	out.setKuduURL(in.getOptionValue(KUDU_MASTER_URL_ARG));
+	    }
+	  }
 
   @SuppressWarnings("static-access")
   protected void addValidationOpts(RelatedOptions validationOptions) {
@@ -1668,6 +1707,21 @@ public abstract class BaseSqoopTool extends com.cloudera.sqoop.tool.SqoopTool {
       throw new InvalidOptionsException(validationMessage);
     }
   }
+
+  protected void validateKuduOptions(SqoopOptions options)
+	      throws InvalidOptionsException {
+	    if (options.getKuduTable() == null) {
+	      throw new InvalidOptionsException(
+	          "--kudu-table is a required field."
+	          + HELP_STR);
+	    }	   
+	    
+	    if (options.getKuduURL() == null) {
+	    	throw new InvalidOptionsException(
+	    		"--kudu-master-url is a required field"
+	    		+ HELP_STR);
+	    }
+	  }
 
   /**
    * Given an array of extra arguments (usually populated via

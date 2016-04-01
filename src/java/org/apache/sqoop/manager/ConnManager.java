@@ -861,5 +861,14 @@ public abstract class ConnManager {
     return false;
   }
 
+  /**
+   * Determine if Kudu operations from direct mode of the connector is
+   * allowed.  By default direct mode is not compatible with Kudu
+   * @return Whether direct mode is allowed.
+   */
+  public boolean isDirectModeKuduSupported() {
+    return false;
+  }
+  
 }
 

@@ -329,6 +329,16 @@ public class SqoopOptions implements Cloneable {
   // Use single mapper for non-primary key tables without
   // explicit split by cols
   @StoredAsProperty("reset.onemapper") private boolean autoResetToOneMapper;
+  
+  //Kudu table to import into
+  @StoredAsProperty("kudu.table") private String kuduTable;
+  
+  // if true, create the Kudu table based on the source table
+  @StoredAsProperty("kudu.create.table") private boolean kuduCreateTable;
+  
+  //Kudu master URL
+  @StoredAsProperty("kudu.master.url") private String kuduMasterURL;
+  
 
   // These next two fields are not serialized to the metastore.
   // If this SqoopOptions is created by reading a saved job, these will
@@ -2630,4 +2640,48 @@ public class SqoopOptions implements Cloneable {
     public void setToolName(String toolName) {
         this.toolName = toolName;
     }
+    
+    /**
+     * Set whether we should create missing Kudu tables.
+     */
+    public void setCreateKuduTable(boolean create) {
+      this.kuduCreateTable = create;
+    }
+
+    /**
+     * Returns true if we should create Kudu tables
+     * that are missing.
+     */
+    public boolean getCreateKuduTable() {
+      return this.kuduCreateTable;
+    }
+    
+    /**
+     * Gets the target Kudu table name, if any.
+     */
+    public String getKuduTable() {
+      return this.kuduTable;
+    }
+
+    /**
+     * Sets the target Kudu table name for an import.
+     */
+    public void setKuduTable(String table) {
+      this.kuduTable = table;
+    }
+    
+    /**
+     * Sets the kudu master url
+     */
+    public void setKuduURL(String URL) {
+    	this.kuduMasterURL = URL;
+    }
+
+    /*
+     * Gets the Kudu master url
+     */
+    public String getKuduURL() {
+    	return this.kuduMasterURL;
+    }
+    
 }

@@ -1,0 +1,158 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.sqoop.mapreduce;
+
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.OutputFormat;
+import org.apache.sqoop.kudu.KuduMutationProcessor;
+import org.kududb.client.KuduClient;
+import org.kududb.client.KuduTable;
+
+import com.cloudera.sqoop.SqoopOptions;
+import com.cloudera.sqoop.hbase.HBasePutProcessor;
+import com.cloudera.sqoop.lib.FieldMapProcessor;
+import com.cloudera.sqoop.lib.SqoopRecord;
+import com.cloudera.sqoop.manager.ConnManager;
+import com.cloudera.sqoop.manager.ImportJobContext;
+import com.cloudera.sqoop.util.ImportException;
+
+/**
+ * Runs an Kudu import via DataDrivenDBInputFormat to the KuduMutationProcessor
+ * in the DelegatingOutputFormat.
+ */
+public class KuduImportJob extends DataDrivenImportJob {
+
+	public static final Log LOG = LogFactory.getLog(KuduImportJob.class
+			.getName());
+
+	public KuduImportJob(final SqoopOptions opts,
+			final ImportJobContext importContext) {
+		super(opts, importContext.getInputFormat(), importContext);
+
+	}
+
+	@Override
+	protected void configureMapper(Job job, String tableName,
+			String tableClassName) throws IOException {
+		job.setOutputKeyClass(SqoopRecord.class);
+		job.setOutputValueClass(NullWritable.class);
+		job.setMapperClass(getMapperClass());
+	}
+
+	@Override
+	protected Class<? extends Mapper> getMapperClass() {
+		return KuduImportMapper.class;
+	}
+
+	@Override
+	protected Class<? extends OutputFormat> getOutputFormatClass()
+			throws ClassNotFoundException {
+		return DelegatingOutputFormat.class;
+	}
+
+	@Override
+	protected void configureOutputFormat(Job job, String tableName,
+			String tableClassName) throws ClassNotFoundException, IOException {
+
+		// Use the DelegatingOutputFormat with the KuduMutationProcessor.
+		job.setOutputFormatClass(getOutputFormatClass());
+
+		Configuration conf = job.getConfiguration();
+		conf.setClass("sqoop.output.delegate.field.map.processor.class",
+				KuduMutationProcessor.class, FieldMapProcessor.class);
+
+		// Set the Kudu parameters (table, kudu_master_url):
+		conf.set(KuduMutationProcessor.TABLE_NAME_KEY, options.getKuduTable());
+		conf.set(KuduMutationProcessor.KUDU_MASTER_KEY, options.getKuduURL());
+
+	}
+
+	protected boolean skipDelegationTokens(Configuration conf) {
+		return conf.getBoolean("sqoop.kudu.security.token.skip", true);
+	}
+
+	@SuppressWarnings("deprecation")
+	@Override
+	/** Create the target Kudu table before running the job. */
+	protected void jobSetup(Job job) throws IOException, ImportException {
+		Configuration conf = job.getConfiguration();
+		String tableName = conf.get(KuduMutationProcessor.TABLE_NAME_KEY);
+		String masterUrl = conf.get(KuduMutationProcessor.KUDU_MASTER_KEY);
+
+		if (null == tableName) {
+			throw new ImportException(
+					"Import to Kudu error: Table name not specified");
+		}
+
+		if (null == masterUrl) {
+			throw new ImportException(
+					"Import to Kudu error: Master url not specified");
+		}
+		
+		
+		KuduClient kuduClient = new KuduClient.KuduClientBuilder(masterUrl).build();
+
+		if (!skipDelegationTokens(conf)) {
+			// DelegationTokens not implemented in Kudu so skipping for now
+		}
+
+		// Check to see if the table exists.
+		KuduTable kuduTable = null;
+		
+		
+		try {
+			if (!kuduClient.tableExists(tableName)) {
+				if (options.getCreateKuduTable()) {
+					// Create the table.
+					LOG.info("Creating missing Kudu table " + tableName);
+					// TODO IMPLEMENT PRIVATE CREATE TABLE METHOD
+				} else {
+					LOG.warn("Could not find Kudu table " + tableName);
+					LOG.warn("This job may fail. Either explicitly create the table,");
+					LOG.warn("or re-run with --kudu-create-table.");
+				}
+			} else {
+				// Table exists, so retrieve their current version
+				// Nothing to do here
+			}
+		} catch (Exception e1) {
+			LOG.error("Error in checking if kudu table " + tableName + " exists");
+			throw new IOException("Error in checking if kudu table " + tableName + " exists");
+		}
+		
+		try {
+			kuduClient.close();
+		} catch (Exception e) {
+			LOG.error("Error closing kudu client");
+			throw new IOException("Error closing kudu client");
+		}
+
+		super.jobSetup(job);
+	}
+
+}
