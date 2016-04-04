@@ -19,8 +19,6 @@
 package org.apache.sqoop.mapreduce;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -32,12 +30,10 @@ import org.apache.hadoop.mapreduce.OutputFormat;
 import org.apache.sqoop.kudu.KuduMutationProcessor;
 import org.apache.sqoop.kudu.KuduTableWriter;
 import org.apache.sqoop.kudu.KuduUtil;
-import org.kududb.Schema;
 import org.kududb.client.KuduClient;
 import org.kududb.client.KuduTable;
 
 import com.cloudera.sqoop.SqoopOptions;
-import com.cloudera.sqoop.hbase.HBasePutProcessor;
 import com.cloudera.sqoop.lib.FieldMapProcessor;
 import com.cloudera.sqoop.lib.SqoopRecord;
 import com.cloudera.sqoop.manager.ConnManager;
@@ -139,6 +135,42 @@ public class KuduImportJob extends DataDrivenImportJob {
 			if (!kuduClient.tableExists(tableName)) {
 				if (options.getCreateKuduTable()) {
 
+					// Need key columns to create a table - Checking what we have
+					String kuduRowKeyCols = opts.getKuduKeyCols();
+
+					if (kuduRowKeyCols == null) {
+						// kudu-key-cols was not specified
+						// See if a split-by column was specified and use as key-cols
+						LOG.info("Checking to see if split-by can be used for a row-key");
+						kuduRowKeyCols = opts.getSplitByCol();
+					}
+
+					if (kuduRowKeyCols == null) {
+						// Split-by-col was not specified either
+						// See if we can get a primary key cols form the table
+						LOG.info("Checking to see if primary-key can be used for a row-key");
+						LOG.warn("--kudu-key-cols should be used " +
+								"if the source table has a multi-column primary-key");
+						kuduRowKeyCols = connManager.getPrimaryKey(opts.getTableName());
+					}
+
+					if (kuduRowKeyCols == null) {
+						// Still could not find a row key
+						// give-up and return an error
+						LOG.error("Could not determine row-key-column");
+						throw new IOException(
+								"Could not determine the row key column " +
+								"Use the --kudu-key-cols <CommaSeparateKeyCols> " +
+								"option to set the key columns"
+						);
+					}
+
+					if ( opts.getKuduKeyCols() == null &&
+							kuduRowKeyCols != null) {
+						LOG.info("Setting Kudu row key cols to: " + kuduRowKeyCols);
+						opts.setKuduKeyCols(kuduRowKeyCols);
+					}
+
 					// Create the table.
 					LOG.info("Creating missing Kudu table " + tableName);
 					KuduTableWriter kuduTableWriter = new KuduTableWriter(opts, connManager,
@@ -152,9 +184,11 @@ public class KuduImportJob extends DataDrivenImportJob {
 				}
 			}
 
-		} catch (Exception e1) {
-			LOG.error("Error in checking if kudu table " + tableName + " exists");
-			throw new IOException("Error in checking if kudu table " + tableName + " exists");
+		} catch (IOException e1) {
+			LOG.error(e1.getMessage());
+			throw e1;
+		} catch (Exception e) {
+			throw new IOException(e);
 		}
 		
 		try {

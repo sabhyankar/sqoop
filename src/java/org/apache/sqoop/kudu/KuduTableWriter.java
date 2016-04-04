@@ -20,13 +20,13 @@ package org.apache.sqoop.kudu;
 
 import com.cloudera.sqoop.SqoopOptions;
 import com.cloudera.sqoop.manager.ConnManager;
-import org.apache.commons.jexl2.UnifiedJEXL;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.kududb.ColumnSchema;
 import org.kududb.Schema;
 import org.kududb.Type;
+import org.kududb.client.CreateTableOptions;
 import org.kududb.client.KuduClient;
 
 import java.io.IOException;
@@ -225,7 +225,17 @@ public class KuduTableWriter {
             }
 
             // TODO modify createTable to use CreateTableOptions
-            kuduClient.createTable(outputTable,schema);
+            CreateTableOptions createTableOptions = new CreateTableOptions();
+            createTableOptions.setNumReplicas(KuduConstants.KUDU_DEFAULT_NUM_REPLICAS);
+            List<String> hashPartitionColumns = new ArrayList<String>(schema.getPrimaryKeyColumnCount());
+
+            for (ColumnSchema columnSchema : schema.getPrimaryKeyColumns()) {
+                LOG.debug("Adding " + columnSchema.getName() + " to hash partition columns");
+                hashPartitionColumns.add(columnSchema.getName());
+            }
+            createTableOptions.addHashPartitions(hashPartitionColumns,KuduConstants.KUDU_DEFAULT_NO_OF_BUCKETS);
+
+            kuduClient.createTable(outputTable,schema,createTableOptions);
 
         } catch (Exception e) {
             LOG.error("Error creating Kudu table: " + this.outputTable);

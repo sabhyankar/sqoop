@@ -920,7 +920,7 @@ public abstract class BaseSqoopTool extends com.cloudera.sqoop.tool.SqoopTool {
 	        .create());
         kuduOpts.addOption(OptionBuilder.withArgName("kudu_key_cols")
             .hasArg()
-            .withDescription("Required comma separated list of key columns")
+            .withDescription("Comma separated list of key columns")
             .withLongOpt(KUDU_KEY_COLS_ARG)
             .create()
         );
@@ -1738,10 +1738,9 @@ protected void applyKuduOptions(CommandLine in, SqoopOptions out) {
 
         if (options.getCreateKuduTable() &&
                 options.getKuduKeyCols() == null) {
-          throw new InvalidOptionsException(
-                  "--kudu-key-cols is required when --kudu-create-table is specified"
-                  + HELP_STR
-          );
+          LOG.warn("--kudu-key-cols not set with --kudu-create-table option " +
+                   "Will try and extract key columns from split-by-key or source table " +
+                   "Primary Key");
         }
 	  }
 

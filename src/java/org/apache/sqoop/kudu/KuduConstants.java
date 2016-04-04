@@ -18,9 +18,6 @@
 
 package org.apache.sqoop.kudu;
 
-import org.kududb.client.SessionConfiguration;
-import org.kududb.client.SessionConfiguration.FlushMode;
-
 /**
  * This class provides constants used to define properties relating to
  * Kudu imports.
@@ -33,5 +30,11 @@ public final class KuduConstants {
 
     /** Should columns be set to Nullable by default */
     public static final boolean KUDU_SET_NULLABLE_COLUMN_ALWAYS = true;
+
+    /** Number of replicas to use by default for Kudu table */
+    public static final int KUDU_DEFAULT_NUM_REPLICAS = 3;
+
+    /** Number of buckets to use by default for Kudu table */
+    public static final int KUDU_DEFAULT_NO_OF_BUCKETS = 3;
 
 }
