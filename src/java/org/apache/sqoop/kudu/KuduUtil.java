@@ -52,7 +52,7 @@ public class KuduUtil {
 	/**
 	 * This is a way to make this always return false for testing.
 	 */
-	public static void setAlwaysNoHKuduJarMode(boolean mode) {
+	public static void setAlwaysNoKuduJarMode(boolean mode) {
 		testingMode = mode;
 	}
 
@@ -82,6 +82,7 @@ public class KuduUtil {
 		} else if (options.isSkipDistCache()) {
 			LOG.info("Not adding Kudu jars to distributed cache as requested");
 		} else {
+            LOG.info("Adding Kudu jars to distributed case as requested");
 			Configuration conf = job.getConfiguration();
 			FileSystem fs = FileSystem.getLocal(conf);
 
@@ -92,10 +93,10 @@ public class KuduUtil {
 							.getStringCollection(ConfigurationConstants.MAPRED_DISTCACHE_CONF_PARAM));
 
 			///TODO - HARDCODING REMOVE - SAMEER
-			File dir = new File("/var/lib/hadoop-hdfs/kudu-client");
-			String path = dir.getPath();
-			LOG.info("Adding jar files under " + path + " to distributed cache");
-			addDirToCache(dir, fs, localUrls, false);
+			//File dir = new File("/var/lib/hadoop-hdfs/kudu-client");
+			//String path = dir.getPath();
+			//LOG.info("Adding jar files under " + path + " to distributed cache");
+			//addDirToCache(dir, fs, localUrls, false);
 			
 
 			String tmpjars = conf
