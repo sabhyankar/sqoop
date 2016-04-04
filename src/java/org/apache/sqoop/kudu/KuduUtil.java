@@ -92,13 +92,6 @@ public class KuduUtil {
 					.addAll(conf
 							.getStringCollection(ConfigurationConstants.MAPRED_DISTCACHE_CONF_PARAM));
 
-			///TODO - HARDCODING REMOVE - SAMEER
-			//File dir = new File("/var/lib/hadoop-hdfs/kudu-client");
-			//String path = dir.getPath();
-			//LOG.info("Adding jar files under " + path + " to distributed cache");
-			//addDirToCache(dir, fs, localUrls, false);
-			
-
 			String tmpjars = conf
 					.get(ConfigurationConstants.MAPRED_DISTCACHE_CONF_PARAM);
 			StringBuilder sb = new StringBuilder(1024);
