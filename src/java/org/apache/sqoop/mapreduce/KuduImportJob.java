@@ -30,6 +30,7 @@ import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.OutputFormat;
 import org.apache.sqoop.kudu.KuduMutationProcessor;
+import org.apache.sqoop.kudu.KuduTableWriter;
 import org.apache.sqoop.kudu.KuduUtil;
 import org.kududb.client.KuduClient;
 import org.kududb.client.KuduTable;
@@ -52,11 +53,13 @@ public class KuduImportJob extends DataDrivenImportJob {
 			.getName());
 	
 	protected static SqoopOptions opts;
+	protected static ConnManager connManager;
 
 	public KuduImportJob(final SqoopOptions opts,
 			final ImportJobContext importContext) {
 		super(opts, importContext.getInputFormat(), importContext);
 		this.opts = opts;
+		this.connManager = importContext.getConnManager();
 	}
 
 	@Override
@@ -134,18 +137,20 @@ public class KuduImportJob extends DataDrivenImportJob {
 		try {
 			if (!kuduClient.tableExists(tableName)) {
 				if (options.getCreateKuduTable()) {
+
 					// Create the table.
 					LOG.info("Creating missing Kudu table " + tableName);
-					// TODO IMPLEMENT PRIVATE CREATE TABLE METHOD
+					KuduTableWriter kuduTableWriter = new KuduTableWriter(opts, connManager,
+							kuduClient,opts.getTableName(),tableName,conf);
+					kuduTableWriter.createKuduTable();
+
 				} else {
 					LOG.warn("Could not find Kudu table " + tableName);
 					LOG.warn("This job may fail. Either explicitly create the table,");
 					LOG.warn("or re-run with --kudu-create-table.");
 				}
-			} else {
-				// Table exists, so retrieve their current version
-				// Nothing to do here
 			}
+
 		} catch (Exception e1) {
 			LOG.error("Error in checking if kudu table " + tableName + " exists");
 			throw new IOException("Error in checking if kudu table " + tableName + " exists");

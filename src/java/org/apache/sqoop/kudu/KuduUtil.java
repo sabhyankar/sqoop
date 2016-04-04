@@ -61,6 +61,7 @@ public class KuduUtil {
 			return false;
 		}
 		try {
+			//Are kudu jars on classpath?
 			Class.forName("org.kududb.client.KuduTable");
 		} catch (ClassNotFoundException cnfe) {
 			return false;
