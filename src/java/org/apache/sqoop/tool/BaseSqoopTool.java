@@ -1711,15 +1711,17 @@ protected void applyKuduOptions(CommandLine in, SqoopOptions out) {
 
   protected void validateKuduOptions(SqoopOptions options)
 	      throws InvalidOptionsException {
-	    if (options.getKuduTable() == null) {
+	    if ( options.getKuduTable() != null &&
+                options.getKuduURL() == null) {
 	      throw new InvalidOptionsException(
-	          "--kudu-table is a required field."
+	          "--kudu-master-url is a required field."
 	          + HELP_STR);
 	    }	   
 	    
-	    if (options.getKuduURL() == null) {
+	    if (options.getKuduURL() != null &&
+                options.getKuduTable() == null) {
 	    	throw new InvalidOptionsException(
-	    		"--kudu-master-url is a required field"
+	    		"--kudu-table is a required field"
 	    		+ HELP_STR);
 	    }
 	  }
