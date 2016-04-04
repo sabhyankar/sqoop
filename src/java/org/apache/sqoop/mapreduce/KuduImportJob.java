@@ -143,11 +143,7 @@ public class KuduImportJob extends DataDrivenImportJob {
 					LOG.info("Creating missing Kudu table " + tableName);
 					KuduTableWriter kuduTableWriter = new KuduTableWriter(opts, connManager,
 							kuduClient,opts.getTableName(),tableName,conf);
-					Schema schema = kuduTableWriter.getTableSchema();
-					LOG.debug("Extracted table schema: " + schema.toString());
-					LOG.debug("Creating Kudu table..");
-					String kuduTableId = kuduClient.createTable(tableName,kuduTableWriter.getTableSchema()).getTableId();
-					LOG.debug("Created Kudu table with id: " + kuduTableId);
+					kuduTableWriter.createKuduTable();
 
 				} else {
 					LOG.warn("Could not find Kudu table " + tableName);

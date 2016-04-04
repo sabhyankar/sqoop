@@ -338,6 +338,9 @@ public class SqoopOptions implements Cloneable {
   
   //Kudu master URL
   @StoredAsProperty("kudu.master.url") private String kuduMasterURL;
+
+  //Kudu key cols
+  @StoredAsProperty("kudu.key.cols") private String kuduKeyCols;
   
 
   // These next two fields are not serialized to the metastore.
@@ -2683,5 +2686,15 @@ public class SqoopOptions implements Cloneable {
     public String getKuduURL() {
     	return this.kuduMasterURL;
     }
-    
+
+    /**
+     * Gets the target Kudu table key columns
+     */
+    public String getKuduKeyCols() { return this.kuduKeyCols; }
+
+    /**
+     * Sets the Kudu key cols
+     */
+    public void setKuduKeyCols(String kuduKeyCols) { this.kuduKeyCols = kuduKeyCols; }
+
 }

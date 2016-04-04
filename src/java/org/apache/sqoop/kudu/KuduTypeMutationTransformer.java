@@ -71,35 +71,28 @@ public class KuduTypeMutationTransformer extends MutationTransformer {
 			
 			switch(columnType.getName()) {
 			case "binary":
-				LOG.info("Updating binary columnName:" + colName);
 				row.addBinary(colName, (byte[])val);
 				break;
 			case "bool":
-				LOG.info("Updating bool columnName:" + colName);
 				row.addBoolean(colName, (boolean) val);
 				break;
 			case "double":
-				LOG.info("Updating double columnName:" + colName);
 				row.addDouble(colName, (Double) val);
 				break;
 			case "float":
-				LOG.info("Updating float columnName:" + colName);
 				row.addFloat(colName, (Float) val);
 				break;
 			case "int16":				
 			case "int32":			
 			case "int64":			
 			case "int8":
-				LOG.info("Updating int columnName:" + colName);
 				row.addInt(colName, (int) val);
 				break;
 			case "string":
-				LOG.info("Updating string columnName:" + colName);
 				row.addString(colName, (String) val);
 				break;
 			case "timestamp":
-				LOG.info("Updating timestamp columnName:" + colName);
-				row.addLong(colName, (Long) val);
+				row.addLong(colName, ((java.sql.Timestamp) val).getTime());
 				break;
 			default:
 				LOG.error("No Mapping found for:" + colName + " for type: " + columnType.getName());

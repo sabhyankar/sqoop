@@ -211,6 +211,7 @@ public abstract class BaseSqoopTool extends com.cloudera.sqoop.tool.SqoopTool {
   public static final String KUDU_TABLE_ARG = "kudu-table";
   public static final String KUDU_CREATE_TABLE_ARG = "kudu-create-table";
   public static final String KUDU_MASTER_URL_ARG = "kudu-master-url";
+  public static final String KUDU_KEY_COLS_ARG = "kudu-key-cols";
 
 
   // Arguments for the saved job management system.
@@ -917,6 +918,12 @@ public abstract class BaseSqoopTool extends com.cloudera.sqoop.tool.SqoopTool {
 	        .withDescription("If specified, create missing Kudu tables")
 	        .withLongOpt(KUDU_CREATE_TABLE_ARG)
 	        .create());
+        kuduOpts.addOption(OptionBuilder.withArgName("kudu_key_cols")
+            .hasArg()
+            .withDescription("Required comma separated list of key columns")
+            .withLongOpt(KUDU_KEY_COLS_ARG)
+            .create()
+        );
 	    kuduOpts.addOption(OptionBuilder.withArgName("master_url")
 	    		.hasArg()
 	    		.withDescription("Kudu Master URL to connect to")
@@ -939,6 +946,10 @@ protected void applyKuduOptions(CommandLine in, SqoopOptions out) {
 	    if (in.hasOption(KUDU_MASTER_URL_ARG)) {
 	    	out.setKuduURL(in.getOptionValue(KUDU_MASTER_URL_ARG));
 	    }
+
+        if (in.hasOption(KUDU_KEY_COLS_ARG)) {
+          out.setKuduKeyCols(in.getOptionValue(KUDU_KEY_COLS_ARG));
+        }
 	  }
 
   @SuppressWarnings("static-access")
@@ -1724,6 +1735,14 @@ protected void applyKuduOptions(CommandLine in, SqoopOptions out) {
 	    		"--kudu-table is a required field"
 	    		+ HELP_STR);
 	    }
+
+        if (options.getCreateKuduTable() &&
+                options.getKuduKeyCols() == null) {
+          throw new InvalidOptionsException(
+                  "--kudu-key-cols is required when --kudu-create-table is specified"
+                  + HELP_STR
+          );
+        }
 	  }
 
   /**

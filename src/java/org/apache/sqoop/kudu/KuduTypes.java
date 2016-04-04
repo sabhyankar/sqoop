@@ -52,11 +52,12 @@ public class KuduTypes {
             case Types.TIME:
             case Types.TIMESTAMP:
                 return Type.TIMESTAMP;
+            case Types.REAL:
+            case Types.FLOAT:
+                return Type.FLOAT;
             case Types.NUMERIC:
             case Types.DECIMAL:
-            case Types.FLOAT:
             case Types.DOUBLE:
-            case Types.REAL:
                 return Type.DOUBLE;
             case Types.BIT:
             case Types.BOOLEAN:
