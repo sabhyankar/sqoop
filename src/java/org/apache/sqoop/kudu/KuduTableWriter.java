@@ -59,6 +59,7 @@ public class KuduTableWriter {
                            final KuduClient kuduClient, final String inputTable,
                            final String outputTable, final Configuration config
     ) {
+        LOG.debug("Initialized KuduTableWriter");
         this.opts = opts;
         this.connMgr = connMgr;
         this.kuduClient = kuduClient;
@@ -101,9 +102,10 @@ public class KuduTableWriter {
     }
 
     /**
+     * Retrieves Kudu Schema object for the new Kudu table
      * @return Schema for Kudu table
      */
-    private Schema getTableSchema() throws IOException {
+    public Schema getTableSchema() throws IOException {
         Map<String, Integer> columnTypes;
 
         // TODO Add a MapColumnKudu
@@ -180,6 +182,7 @@ public class KuduTableWriter {
     public void createKuduTable() throws IOException{
 
         LOG.info("Creating Kudu table: " + outputTable);
+        LOG.debug("Creating Kudu table: " + outputTable);
         try {
             Schema schema = getTableSchema();
             if ( null != schema ) {

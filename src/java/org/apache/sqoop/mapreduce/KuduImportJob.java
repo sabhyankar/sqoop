@@ -32,6 +32,7 @@ import org.apache.hadoop.mapreduce.OutputFormat;
 import org.apache.sqoop.kudu.KuduMutationProcessor;
 import org.apache.sqoop.kudu.KuduTableWriter;
 import org.apache.sqoop.kudu.KuduUtil;
+import org.kududb.Schema;
 import org.kududb.client.KuduClient;
 import org.kududb.client.KuduTable;
 
@@ -142,7 +143,11 @@ public class KuduImportJob extends DataDrivenImportJob {
 					LOG.info("Creating missing Kudu table " + tableName);
 					KuduTableWriter kuduTableWriter = new KuduTableWriter(opts, connManager,
 							kuduClient,opts.getTableName(),tableName,conf);
-					kuduTableWriter.createKuduTable();
+					Schema schema = kuduTableWriter.getTableSchema();
+					LOG.debug("Extracted table schema: " + schema.toString());
+					LOG.debug("Creating Kudu table..");
+					String kuduTableId = kuduClient.createTable(tableName,kuduTableWriter.getTableSchema()).getTableId();
+					LOG.debug("Created Kudu table with id: " + kuduTableId);
 
 				} else {
 					LOG.warn("Could not find Kudu table " + tableName);
