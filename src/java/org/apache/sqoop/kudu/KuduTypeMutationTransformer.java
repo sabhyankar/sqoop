@@ -33,6 +33,9 @@ import org.kududb.ColumnSchema;
 import org.kududb.Schema;
 import org.kududb.Type;
 
+/**
+ * MutationTransformer that generate Insert operations for Kudu
+ */
 public class KuduTypeMutationTransformer extends MutationTransformer {
 	
 	public static final Log LOG = LogFactory
@@ -42,6 +45,13 @@ public class KuduTypeMutationTransformer extends MutationTransformer {
 	public KuduTypeMutationTransformer() {
 	}
 
+    /**
+     * Generates a list of Input operations for Kudu.
+     * @param fields
+     *            a map of field names to values to insert.
+     * @return
+     * @throws IOException
+     */
 	@Override
 	public List<Insert> getInsertCommand(Map<String, Object> fields) 
 			throws IOException {

@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -26,37 +26,38 @@ import org.kududb.client.Insert;
 import org.kududb.client.KuduTable;
 
 /**
- * Interface that takes a map of jdbc field names to values and converts them to
- * a Insert Operation for Kudu.
+ * Interface that takes a map of jdbc field names to values and converts
+ * them to an Insert Operation for Kudu.
  */
 public abstract class MutationTransformer {
 
-	private KuduTable kuduTable;
-	
-	/**
-	 * Returns the Kudu table to insert into
-	 */
-	public KuduTable getKuduTable() {
-		return this.kuduTable;
-	}
-	
-	/**
-	 * Sets the Kudu table to insert into
-	 * @param kuduTable
-	 */
-	public void setKuduTable(KuduTable kuduTable) {
-		this.kuduTable = kuduTable;
-	}
+    private KuduTable kuduTable;
 
-	/**
-	 * Returns a list of Put commands that inserts the fields into a row in
-	 * HBase.
-	 * 
-	 * @param fields
-	 *            a map of field names to values to insert.
-	 * @return A list of Put commands that inserts these into HBase.
-	 */
-	public abstract List<Insert> getInsertCommand(Map<String, Object> fields) 
-			throws IOException;
+    /**
+     * Returns the Kudu table to insert into.
+     */
+    public KuduTable getKuduTable() {
+        return this.kuduTable;
+    }
+
+    /**
+     * Sets the Kudu table to insert into.
+     * @param kuduTable
+     */
+    public void setKuduTable(KuduTable kuduTable) {
+
+        this.kuduTable = kuduTable;
+    }
+
+    /**
+     * Returns a list of Put commands that inserts the fields into a row in
+     * HBase.
+     *
+     * @param fields
+     *            a map of field names to values to insert.
+     * @return A list of Put commands that inserts these into HBase.
+     */
+    public abstract List<Insert> getInsertCommand(Map<String, Object> fields)
+            throws IOException;
 
 }

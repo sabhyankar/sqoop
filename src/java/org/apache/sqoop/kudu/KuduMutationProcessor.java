@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -40,145 +40,157 @@ import com.cloudera.sqoop.lib.ProcessingException;
 
 @SuppressWarnings("deprecation")
 public class KuduMutationProcessor implements Closeable, Configurable,
- FieldMapProcessor {
-	
-	  public static final Log LOG = LogFactory.getLog(
-		      KuduMutationProcessor.class.getName());
+        FieldMapProcessor {
 
-		  /** Configuration key specifying the table to insert into. */
-		  public static final String TABLE_NAME_KEY = "sqoop.kudu.insert.table";
-		 
+    public static final Log LOG = LogFactory.getLog(
+            KuduMutationProcessor.class.getName());
 
-		  /**
-		   * Configuration key specifying the MutationTransformer implementation to use.
-		   */
-		  public static final String TRANSFORMER_CLASS_KEY =
-		      "sqoop.kudu.insert.mutation.transformer.class";
+    /** Configuration key specifying the table to insert into. */
+    public static final String TABLE_NAME_KEY
+            = "sqoop.kudu.insert.table";
 
-		  /**
-		   * Configuration key specifying the KuduMaster URL to use.
-		   */
-		  public static final String KUDU_MASTER_KEY =
-		      "sqoop.kudu.kudu.master";
 
-		  private Configuration conf;
+    /**
+     * Configuration key specifying the MutationTransformer
+     * implementation to use.
+     */
+    public static final String TRANSFORMER_CLASS_KEY =
+            "sqoop.kudu.insert.mutation.transformer.class";
 
-		  // An object that can transform a map of fieldName->object
-		  // into a Put command.
-		  private MutationTransformer mutationTransformer;
+    /**
+     * Configuration key specifying the KuduMaster URL to use.
+     */
+    public static final String KUDU_MASTER_KEY =
+            "sqoop.kudu.kudu.master";
 
-		  private String kuduMasterURL;
-		  private String tableName;		
-		  private KuduClient kuduClient;
-		  private KuduSession kuduSession;
-		  private KuduTable kuduTable;
+    private Configuration conf;
 
-		  public KuduMutationProcessor() {
-		  }
+    // An object that can transform a map of fieldName->object
+    // into a Put command.
+    private MutationTransformer mutationTransformer;
 
-		@Override
-		public void close() throws IOException {
-			
-			try {
-				if ( null != kuduSession ) {
-					kuduSession.flush();					
-				}
-			} catch (Exception e) {
-				throw new IOException("Error while flushing kudu session");
-			} finally {
-				try {
-					kuduSession.close();
-				} catch (Exception e) {
-					throw new IOException("Error while closing kudu session");
-				}
-			}
-			
-			try {
-				if ( null != kuduClient) {
-					kuduClient.close();
-				}
-			} catch (Exception e) {
-				throw new IOException("Error closing Kudu client");
-			}
-		}
+    private String kuduMasterURL;
+    private String tableName;
+    private KuduClient kuduClient;
+    private KuduSession kuduSession;
+    private KuduTable kuduTable;
 
-		@Override
-		public void accept(FieldMappable record) throws IOException,
-				ProcessingException {
-			Map<String, Object> fields = record.getFieldMap();
-			List<Insert> insertList = mutationTransformer.getInsertCommand(fields);
-			if ( null != insertList ) {
-				for (Insert insert: insertList) {
-					if ( null != insert) {
-						if ( null != kuduSession ) {
-							try {
-								kuduSession.apply(insert);
-							} catch (Exception e) {
-								throw new IOException("Error inserting a row" + e.getMessage());
-							}
-						} else {
-							throw new IOException("Kudu session not initialized");
-						}
-					}
-				}
-			}			
-		}
+    public KuduMutationProcessor() {
+    }
 
-		@Override
-		public Configuration getConf() {
-			return this.conf;
-		}
+    @Override
+    public void close() throws IOException {
 
-		@Override
-		@SuppressWarnings("unchecked")
-		public void setConf(Configuration config) {
-			this.conf = config;
-			
-			kuduMasterURL = conf.get(KUDU_MASTER_KEY,null);
-			
-			if ( null == kuduMasterURL) {
-				kuduMasterURL = "localhost";
-				LOG.warn("Since Kudu Master was not provided, defaulting to localhost");
-			}
-			
+        try {
+            if (null != kuduSession) {
+                kuduSession.flush();
+            }
+        } catch (Exception e) {
+            throw new IOException("Error while flushing kudu session");
+        } finally {
+            try {
+                kuduSession.close();
+            } catch (Exception e) {
+                throw new IOException("Error while closing kudu session");
+            }
+        }
 
-			// Get the implementation of MutationTransformer to use.
-			Class<? extends MutationTransformer> xformerClass =
-					(Class<? extends MutationTransformer>)
-			        this.conf.getClass(TRANSFORMER_CLASS_KEY, KuduTypeMutationTransformer.class);
-			this.mutationTransformer = (MutationTransformer)
-			       ReflectionUtils.newInstance(xformerClass, this.conf);
-			
-			if (null == mutationTransformer) {
-			      throw new RuntimeException("Could not instantiate MutationTransformer.");
-			}
+        try {
+            if (null != kuduClient) {
+                kuduClient.close();
+            }
+        } catch (Exception e) {
+            throw new IOException("Error closing Kudu client");
+        }
+    }
 
-			
-			if (this.mutationTransformer instanceof KuduTypeMutationTransformer) {
-				KuduTypeMutationTransformer stringMutationTransformer =
-			          (KuduTypeMutationTransformer) this.mutationTransformer;
-				
-				kuduClient = new KuduClient.KuduClientBuilder(kuduMasterURL).build();
-				if ( null == kuduClient) {
-					throw new RuntimeException("Could not instantiate KuduClient with URI: " + kuduMasterURL );
-				}
-				tableName = conf.get(TABLE_NAME_KEY,null);
-				if ( null == tableName) {
-					LOG.error("Kudu Insert table not provided!");
-					throw new RuntimeException("Kudu insert table not provided");
-				}
-				
-				try {
-					kuduTable = kuduClient.openTable(tableName);
-				} catch (Exception e) {
-					throw new RuntimeException("Could not open Kudu Table: " + tableName);
-				}
-				stringMutationTransformer.setKuduTable(kuduTable);				
-				kuduSession = kuduClient.newSession();	
-				kuduSession.setFlushMode(FlushMode.AUTO_FLUSH_BACKGROUND);
-				
-			}
+    @Override
+    public void accept(FieldMappable record) throws IOException,
+            ProcessingException {
+        Map<String, Object> fields = record.getFieldMap();
+        List<Insert> insertList =
+                mutationTransformer.getInsertCommand(fields);
+        if (null != insertList) {
+            for (Insert insert : insertList) {
+                if (null != insert) {
+                    if (null != kuduSession) {
+                        try {
+                            kuduSession.apply(insert);
+                        } catch (Exception e) {
+                            throw new IOException("Error inserting a row" +
+                                    e.getMessage());
+                        }
+                    } else {
+                        throw new IOException("Kudu session not initialized");
+                    }
+                }
+            }
+        }
+    }
 
-		}
+    @Override
+    public Configuration getConf() {
+        return this.conf;
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public void setConf(Configuration config) {
+        this.conf = config;
+
+        kuduMasterURL = conf.get(KUDU_MASTER_KEY, null);
+
+        if (null == kuduMasterURL) {
+            kuduMasterURL = "localhost";
+            LOG.warn("Since Kudu Master was not provided, " +
+                    "defaulting to localhost");
+        }
+
+
+        // Get the implementation of MutationTransformer to use.
+        Class<? extends MutationTransformer> xformerClass =
+                (Class<? extends MutationTransformer>)
+                        this.conf.getClass(TRANSFORMER_CLASS_KEY,
+                                KuduTypeMutationTransformer.class);
+        this.mutationTransformer = (MutationTransformer)
+                ReflectionUtils.newInstance(xformerClass, this.conf);
+
+        if (null == mutationTransformer) {
+            throw new RuntimeException(
+                    "Could not instantiate MutationTransformer.");
+        }
+
+
+        if (this.mutationTransformer instanceof KuduTypeMutationTransformer) {
+            KuduTypeMutationTransformer stringMutationTransformer =
+                    (KuduTypeMutationTransformer) this.mutationTransformer;
+
+            kuduClient = new KuduClient.KuduClientBuilder(kuduMasterURL)
+                    .build();
+            if (null == kuduClient) {
+                throw new RuntimeException(
+                        "Could not instantiate KuduClient with URI: " +
+                                kuduMasterURL);
+            }
+            tableName = conf.get(TABLE_NAME_KEY, null);
+            if (null == tableName) {
+                LOG.error("Kudu Insert table not provided!");
+                throw new RuntimeException("Kudu insert table not provided");
+            }
+
+            try {
+                kuduTable = kuduClient.openTable(tableName);
+            } catch (Exception e) {
+                throw new RuntimeException(
+                        "Could not open Kudu Table: " +
+                                tableName);
+            }
+            stringMutationTransformer.setKuduTable(kuduTable);
+            kuduSession = kuduClient.newSession();
+            kuduSession.setFlushMode(FlushMode.AUTO_FLUSH_BACKGROUND);
+
+        }
+
+    }
 
 }

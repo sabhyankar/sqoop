@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -47,181 +47,197 @@ import com.cloudera.sqoop.util.ImportException;
  */
 public class KuduImportJob extends DataDrivenImportJob {
 
-	public static final Log LOG = LogFactory.getLog(KuduImportJob.class
-			.getName());
-	
-	protected static SqoopOptions opts;
-	protected static ConnManager connManager;
+    public static final Log LOG = LogFactory.getLog(KuduImportJob.class
+            .getName());
 
-	public KuduImportJob(final SqoopOptions opts,
-			final ImportJobContext importContext) {
-		super(opts, importContext.getInputFormat(), importContext);
-		this.opts = opts;
-		this.connManager = importContext.getConnManager();
-	}
+    protected static SqoopOptions opts;
+    protected static ConnManager connManager;
 
-	@Override
-	protected void configureMapper(Job job, String tableName,
-			String tableClassName) throws IOException {
-		job.setOutputKeyClass(SqoopRecord.class);
-		job.setOutputValueClass(NullWritable.class);
-		job.setMapperClass(getMapperClass());
-	}
+    public KuduImportJob(final SqoopOptions opts,
+                         final ImportJobContext importContext) {
+        super(opts, importContext.getInputFormat(), importContext);
+        this.opts = opts;
+        this.connManager = importContext.getConnManager();
+    }
 
-	@Override
-	protected Class<? extends Mapper> getMapperClass() {
-		return KuduImportMapper.class;
-	}
+    @Override
+    protected void configureMapper(Job job, String tableName,
+                                   String tableClassName) throws IOException {
+        job.setOutputKeyClass(SqoopRecord.class);
+        job.setOutputValueClass(NullWritable.class);
+        job.setMapperClass(getMapperClass());
+    }
 
-	@Override
-	protected Class<? extends OutputFormat> getOutputFormatClass()
-			throws ClassNotFoundException {
-		return DelegatingOutputFormat.class;
-	}
+    @Override
+    protected Class<? extends Mapper> getMapperClass() {
+        return KuduImportMapper.class;
+    }
 
-	@Override
-	protected void configureOutputFormat(Job job, String tableName,
-			String tableClassName) throws ClassNotFoundException, IOException {
+    @Override
+    protected Class<? extends OutputFormat> getOutputFormatClass()
+            throws ClassNotFoundException {
+        return DelegatingOutputFormat.class;
+    }
 
-		// Use the DelegatingOutputFormat with the KuduMutationProcessor.
-		job.setOutputFormatClass(getOutputFormatClass());
+    @Override
+    protected void configureOutputFormat(Job job, String tableName,
+                                         String tableClassName)
+            throws ClassNotFoundException, IOException {
 
-		Configuration conf = job.getConfiguration();
-		conf.setClass("sqoop.output.delegate.field.map.processor.class",
-				KuduMutationProcessor.class, FieldMapProcessor.class);
+        // Use the DelegatingOutputFormat with the KuduMutationProcessor.
+        job.setOutputFormatClass(getOutputFormatClass());
 
-		// Set the Kudu parameters (table, kudu_master_url):
-		conf.set(KuduMutationProcessor.TABLE_NAME_KEY, options.getKuduTable());
-		conf.set(KuduMutationProcessor.KUDU_MASTER_KEY, options.getKuduURL());
+        Configuration conf = job.getConfiguration();
+        conf.setClass("sqoop.output.delegate.field.map.processor.class",
+                KuduMutationProcessor.class, FieldMapProcessor.class);
 
-	}
+        // Set the Kudu parameters (table, kudu_master_url):
+        conf.set(KuduMutationProcessor.TABLE_NAME_KEY, options.getKuduTable());
+        conf.set(KuduMutationProcessor.KUDU_MASTER_KEY, options.getKuduURL());
 
-	protected boolean skipDelegationTokens(Configuration conf) {
-		return conf.getBoolean("sqoop.kudu.security.token.skip", true);
-	}
+    }
 
-	@SuppressWarnings("deprecation")
-	@Override
-	/** Create the target Kudu table before running the job. */
-	protected void jobSetup(Job job) throws IOException, ImportException {
-		Configuration conf = job.getConfiguration();
-		String tableName = conf.get(KuduMutationProcessor.TABLE_NAME_KEY);
-		String masterUrl = conf.get(KuduMutationProcessor.KUDU_MASTER_KEY);
-		
-		// Add Jars
-		KuduUtil.addJars(job, opts);
+    protected boolean skipDelegationTokens(Configuration conf) {
+        return conf.getBoolean("sqoop.kudu.security.token.skip", true);
+    }
 
-		if (null == tableName) {
-			throw new ImportException(
-					"Import to Kudu error: Table name not specified");
-		}
+    @SuppressWarnings("deprecation")
+    @Override
+    /** Create the target Kudu table before running the job. */
+    protected void jobSetup(Job job) throws IOException, ImportException {
+        Configuration conf = job.getConfiguration();
+        String tableName = conf.get(KuduMutationProcessor.TABLE_NAME_KEY);
+        String masterUrl = conf.get(KuduMutationProcessor.KUDU_MASTER_KEY);
 
-		if (null == masterUrl) {
-			throw new ImportException(
-					"Import to Kudu error: Master url not specified");
-		}
-		
-		
-		KuduClient kuduClient = new KuduClient.KuduClientBuilder(masterUrl).build();
+        // Add Jars
+        KuduUtil.addJars(job, opts);
 
-		if (!skipDelegationTokens(conf)) {
-			// DelegationTokens not implemented in Kudu so skipping for now
-		}
+        if (null == tableName) {
+            throw new ImportException(
+                    "Import to Kudu error: Table name not specified");
+        }
 
-		// Check to see if the table exists.
-		KuduTable kuduTable = null;
-		
-		
-		try {
-			if (!kuduClient.tableExists(tableName)) {
-				if (options.getCreateKuduTable()) {
+        if (null == masterUrl) {
+            throw new ImportException(
+                    "Import to Kudu error: Master url not specified");
+        }
 
-					// Need key columns to create a table - Checking what we have
-					String kuduRowKeyCols = opts.getKuduKeyCols();
 
-					if (kuduRowKeyCols == null) {
-						// kudu-key-cols was not specified
-						// See if a split-by column was specified and use as key-cols
-						LOG.info("Checking to see if split-by can be used for a row-key");
-						kuduRowKeyCols = opts.getSplitByCol();
-					}
+        KuduClient kuduClient = new KuduClient.KuduClientBuilder(masterUrl)
+                .build();
 
-					if (kuduRowKeyCols == null) {
-						// Split-by-col was not specified either
-						// See if we can get a primary key cols form the table
-						LOG.info("Checking to see if primary-key can be used for a row-key");
-						LOG.warn("--kudu-key-cols should be used " +
-								"if the source table has a multi-column primary-key");
-						kuduRowKeyCols = connManager.getPrimaryKey(opts.getTableName());
-					}
+        if (!skipDelegationTokens(conf)) {
+            // DelegationTokens not implemented in Kudu so skipping for now
+        }
 
-					if (kuduRowKeyCols == null) {
-						// Still could not find a row key
-						// give-up and return an error
-						LOG.error("Could not determine row-key-column");
-						throw new IOException(
-								"Could not determine the row key column " +
-								"Use the --kudu-key-cols <CommaSeparateKeyCols> " +
-								"option to set the key columns"
-						);
-					}
+        // Check to see if the table exists.
+        KuduTable kuduTable = null;
 
-					if (opts.getKuduKeyCols() == null &&
-							kuduRowKeyCols != null) {
-						LOG.info("Setting Kudu row key cols to: " + kuduRowKeyCols);
-						opts.setKuduKeyCols(kuduRowKeyCols);
-					}
 
-					// If partition columns are not specified
-					// use the row-key-cols as the partition-cols
-					if (opts.getKuduPartitionCols() == null) {
-						LOG.warn("--kudu-partition-cols not specified " +
-								".. Defaulting to the row key cols");
-						opts.setKuduPartitionCols(opts.getKuduKeyCols());
-					}
+        try {
+            if (!kuduClient.tableExists(tableName)) {
+                if (options.getCreateKuduTable()) {
 
-					// If number of buckets is not specified
-					// use the default
-					if (opts.getKuduPartitionBuckets() == null) {
-						LOG.warn("--kudu-partition-buckets not specified " +
-								".. Defaulting to " + KuduConstants.KUDU_DEFAULT_NO_OF_BUCKETS);
-						opts.setKuduPartitionBuckets(
-								Integer.toString(KuduConstants.KUDU_DEFAULT_NO_OF_BUCKETS)
-						);
-					} else {
-						LOG.info("Setting Kudu partition buckets to " +
-								opts.getKuduPartitionBuckets()
-						);
-					}
+                    // Need key columns to create a table
+                    String kuduRowKeyCols = opts.getKuduKeyCols();
 
-					// Create the table.
-					LOG.info("Creating missing Kudu table " + tableName);
-					KuduTableWriter kuduTableWriter = new KuduTableWriter(opts, connManager,
-							kuduClient,opts.getTableName(),tableName,conf);
-					kuduTableWriter.createKuduTable();
+                    if (kuduRowKeyCols == null) {
+                        // kudu-key-cols was not specified
+                        // See if a split-by column was specified
+                        LOG.info(
+                                "Checking to see if split-by can be " +
+                                        "used for a row-key");
+                        kuduRowKeyCols = opts.getSplitByCol();
+                    }
 
-				} else {
-					LOG.warn("Could not find Kudu table " + tableName);
-					LOG.warn("This job may fail. Either explicitly create the table,");
-					LOG.warn("or re-run with --kudu-create-table.");
-				}
-			}
+                    if (kuduRowKeyCols == null) {
+                        // Split-by-col was not specified either
+                        // See if we can get a primary key cols form the table
+                        LOG.info(
+                                "Checking to see if primary-key " +
+                                        "can be used for a row-key");
+                        LOG.warn("--kudu-key-cols should be used " +
+                                "if the source table has a multi-column " +
+                                "primary-key");
+                        kuduRowKeyCols = connManager.
+                                getPrimaryKey(opts.getTableName());
+                    }
 
-		} catch (IOException e1) {
-			LOG.error(e1.getMessage());
-			throw e1;
-		} catch (Exception e) {
-			throw new IOException(e);
-		}
-		
-		try {
-			kuduClient.close();
-		} catch (Exception e) {
-			LOG.error("Error closing kudu client");
-			throw new IOException("Error closing kudu client");
-		}
+                    if (kuduRowKeyCols == null) {
+                        // Still could not find a row key
+                        // give-up and return an error
+                        LOG.error("Could not determine row-key-column");
+                        throw new IOException(
+                                "Could not determine the row key column " +
+                                        "Use the --kudu-key-cols " +
+                                        "<CommaSeparateKeyCols> " +
+                                        "option to set the key columns"
+                        );
+                    }
 
-		super.jobSetup(job);
-	}
+                    if (opts.getKuduKeyCols() == null &&
+                            kuduRowKeyCols != null) {
+                        LOG.info("Setting Kudu row key cols to: " +
+                                kuduRowKeyCols);
+                        opts.setKuduKeyCols(kuduRowKeyCols);
+                    }
+
+                    // If partition columns are not specified
+                    // use the row-key-cols as the partition-cols
+                    if (opts.getKuduPartitionCols() == null) {
+                        LOG.warn("--kudu-partition-cols not specified " +
+                                ".. Defaulting to the row key cols");
+                        opts.setKuduPartitionCols(opts.getKuduKeyCols());
+                    }
+
+                    // If number of buckets is not specified
+                    // use the default
+                    if (opts.getKuduPartitionBuckets() == null) {
+                        LOG.warn("--kudu-partition-buckets not specified " +
+                                ".. Defaulting to " +
+                                KuduConstants.KUDU_DEFAULT_NO_OF_BUCKETS);
+                        opts.setKuduPartitionBuckets(
+                                Integer.
+                                        toString(
+                                        KuduConstants.
+                                                KUDU_DEFAULT_NO_OF_BUCKETS)
+                        );
+                    } else {
+                        LOG.info("Setting Kudu partition buckets to " +
+                                opts.getKuduPartitionBuckets()
+                        );
+                    }
+
+                    // Create the table.
+                    LOG.info("Creating missing Kudu table " + tableName);
+                    KuduTableWriter kuduTableWriter
+                            = new KuduTableWriter(opts, connManager,
+                            kuduClient, opts.getTableName(), tableName, conf);
+                    kuduTableWriter.createKuduTable();
+
+                } else {
+                    LOG.warn("Could not find Kudu table " + tableName);
+                    LOG.warn("This job may fail. " +
+                            "Either explicitly create the table,");
+                    LOG.warn("or re-run with --kudu-create-table.");
+                }
+            }
+
+        } catch (IOException e1) {
+            LOG.error(e1.getMessage());
+            throw e1;
+        } catch (Exception e) {
+            throw new IOException(e);
+        }
+
+        try {
+            kuduClient.close();
+        } catch (Exception e) {
+            LOG.error("Error closing kudu client");
+            throw new IOException("Error closing kudu client");
+        }
+
+        super.jobSetup(job);
+    }
 
 }

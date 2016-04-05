@@ -24,6 +24,10 @@ import org.kududb.Type;
 
 import java.sql.Types;
 
+/**
+ * Provides datatype mapping between Java SQL datatypes
+ * and Kudu datatypes
+ */
 public class KuduTypes {
     public static final Log LOG = LogFactory.getLog(
             KuduTypes.class.getName());
@@ -80,6 +84,7 @@ public class KuduTypes {
     }
 
     /**
+     * Determines if an approximate data type was used for Kudu.
      * @return true if a sql type can't be translated to a precise match
      * in Hive, and we have to cast it to something more generic.
      */

@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -51,15 +51,19 @@ public class KuduTableWriter {
 
     /**
      * Creates a new KuduTableWriter to create a Kudu table.
-     * @param opts program-wide options
-     * @param connMgr the connection manager used to describe the table.
-     * @param inputTable the name of the table to load.
+     *
+     * @param opts        program-wide options
+     * @param connMgr     the connection manager used to describe the table.
+     * @param inputTable  the name of the table to load.
      * @param outputTable the name of the Kudu table to create.
-     * @param config the Hadoop configuration to use to connect to the dfs
+     * @param config      the Hadoop configuration to use to connect to the dfs
      */
-    public KuduTableWriter(final SqoopOptions opts, final ConnManager connMgr,
-                           final KuduClient kuduClient, final String inputTable,
-                           final String outputTable, final Configuration config
+    public KuduTableWriter(final SqoopOptions opts,
+                           final ConnManager connMgr,
+                           final KuduClient kuduClient,
+                           final String inputTable,
+                           final String outputTable,
+                           final Configuration config
     ) {
         this.opts = opts;
         this.connMgr = connMgr;
@@ -85,8 +89,8 @@ public class KuduTableWriter {
     /**
      * Get the column names to import.
      */
-    private String [] getColumnNames() {
-        String [] colNames = opts.getColumns();
+    private String[] getColumnNames() {
+        String[] colNames = opts.getColumns();
         if (null != colNames) {
             return colNames; // user-specified column names.
         } else if (null != externalColTypes) {
@@ -105,7 +109,8 @@ public class KuduTableWriter {
     }
 
     /**
-     * Retrieves Kudu Schema object for the new Kudu table
+     * Retrieves Kudu Schema object for the new Kudu table.
+     *
      * @return Schema for Kudu table
      */
     private Schema getTableSchema() throws Exception {
@@ -122,20 +127,23 @@ public class KuduTableWriter {
             if (null != inputTable) {
                 columnTypes = connMgr.getColumnTypes(inputTable);
             } else {
-                columnTypes = connMgr.getColumnTypesForQuery(opts.getSqlQuery());
+                columnTypes = connMgr.
+                        getColumnTypesForQuery(opts.getSqlQuery());
             }
         }
 
         if (keyColLookup.isEmpty()) {
-            throw new Exception("Kudu create table requires at least one key column");
+            throw new Exception(
+                    "Kudu create table requires at least one key column"
+            );
         }
 
-        String [] colNames = getColumnNames();
+        String[] colNames = getColumnNames();
 
         // Check that all explicitly mapped columns are present in result set
-        for(Object column : userMapping.keySet()) {
+        for (Object column : userMapping.keySet()) {
             boolean found = false;
-            for(String c : colNames) {
+            for (String c : colNames) {
                 if (c.equals(column)) {
                     found = true;
                     break;
@@ -143,15 +151,16 @@ public class KuduTableWriter {
             }
 
             if (!found) {
-                throw new IllegalArgumentException("No column by the name " + column
-                        + "found while importing data");
+                throw new IllegalArgumentException(
+                        "No column by the name " + column +
+                                "found while importing data");
             }
         }
 
         // Check that the keyColumns are present in the result set
-        for (String keyCol: keyColLookup) {
+        for (String keyCol : keyColLookup) {
             boolean found = false;
-            for(String c : colNames) {
+            for (String c : colNames) {
                 if (c.equalsIgnoreCase(keyCol)) {
                     found = true;
                     break;
@@ -159,13 +168,15 @@ public class KuduTableWriter {
             }
 
             if (!found) {
-                throw new IllegalArgumentException("No key column by the name " + keyCol
-                        + "found while importing data");
+                throw new IllegalArgumentException("No key column by the name " +
+                        keyCol +
+                        "found while importing data");
             }
         }
 
         int numberOfCols = colNames.length;
-        List<ColumnSchema> columns = new ArrayList<ColumnSchema>(numberOfCols);
+        List<ColumnSchema> columns =
+                new ArrayList<ColumnSchema>(numberOfCols);
 
         for (String col : colNames) {
 
@@ -181,25 +192,31 @@ public class KuduTableWriter {
             }
 
             if (null == kuduColType) {
-                throw new IOException("Kudu does not support the SQL type for column "
-                        + col);
+                throw new IOException(
+                        "Kudu does not support the SQL type for column " + col
+                );
             }
 
             if (KuduTypes.isKuduTypeImprovised(colType)) {
                 LOG.warn(
-                        "Column " + col + " had to be cast to a less precise type in Kudu");
+                        "Column " + col +
+                                " had to be cast to a less precise type in Kudu"
+                );
             }
 
             boolean isKeyColumn = keyColLookup.contains(col);
 
             // Key columns shouldnt be nullable
-            boolean isNullable = (isKeyColumn) ? false : KuduConstants.KUDU_SET_NULLABLE_COLUMN_ALWAYS;
+            boolean isNullable =
+                    (isKeyColumn) ? false :
+                            KuduConstants.KUDU_SET_NULLABLE_COLUMN_ALWAYS;
             if (isKeyColumn) {
                 LOG.debug("Column " + col + " is marked as key column");
             }
 
 
-            ColumnSchema columnSchema = new ColumnSchema.ColumnSchemaBuilder(col,kuduColType)
+            ColumnSchema columnSchema = new ColumnSchema
+                    .ColumnSchemaBuilder(col, kuduColType)
                     .key(isKeyColumn)
                     .nullable(isNullable)
                     .build();
@@ -210,41 +227,51 @@ public class KuduTableWriter {
     }
 
     /**
-     * Creates a new Kudu Table based on the Schema generated from the input source table/query
+     * Creates a new Kudu Table based on the Schema
+     * generated from the input source table/query
+     *
      * @throws IOException
      */
-    public void createKuduTable() throws IOException{
+    public void createKuduTable() throws IOException {
 
         try {
 
             Schema schema = getTableSchema();
-            if ( null != schema ) {
+            if (null != schema) {
                 printSchema(schema);
             }
 
-            CreateTableOptions createTableOptions = new CreateTableOptions();
+            CreateTableOptions createTableOptions =
+                    new CreateTableOptions();
 
             // Set a replica count only if user explicity calls for it using
             // --kudu-replica-count
             // otherwise Kudu will pick the system default
             if (opts.getKuduReplicaCount() != null) {
-                int replicaCount = Integer.parseInt(opts.getKuduReplicaCount());
+                int replicaCount =
+                        Integer.parseInt(opts.getKuduReplicaCount());
                 LOG.warn("Setting Kudu replica count to " + replicaCount);
                 createTableOptions.setNumReplicas(replicaCount);
             }
 
             List<String> hashPartitionColumns =
                     getPartitionKeyCols(opts.getKuduPartitionCols());
-            int kuduPartitionBuckets = Integer.parseInt(opts.getKuduPartitionBuckets());
+            int kuduPartitionBuckets =
+                    Integer.parseInt(opts.getKuduPartitionBuckets());
 
-            createTableOptions.addHashPartitions(hashPartitionColumns,kuduPartitionBuckets);
-            kuduClient.createTable(outputTable,schema,createTableOptions);
+            createTableOptions.addHashPartitions(
+                    hashPartitionColumns,
+                    kuduPartitionBuckets
+            );
+            kuduClient.createTable(outputTable, schema, createTableOptions);
 
         } catch (Exception e) {
             LOG.error("Error creating Kudu table: " + this.outputTable);
             LOG.error(e.getMessage());
-            throw new IOException("Error creating Kudu table: " + this.outputTable +
-            " with exception: " + e.getMessage());
+            throw new IOException("Error creating Kudu table: " +
+                    this.outputTable + " with exception: " +
+                    e.getMessage()
+            );
         }
     }
 
@@ -255,28 +282,31 @@ public class KuduTableWriter {
 
         LOG.debug("Printing schema for Kudu table..");
         for (ColumnSchema sch : schema.getColumns()) {
-            LOG.debug("Column Name: " + sch.getName() + " [" + sch.getType().getName() + "]"
-            + " key column: [" + sch.isKey() + "]");
+            LOG.debug("Column Name: " + sch.getName() +
+                    " [" + sch.getType().getName() + "]" +
+                    " key column: [" + sch.isKey() + "]"
+            );
         }
     }
 
     /**
-     * Loop through kuduKeyCols and memoize results
+     * Loop through kuduKeyCols and memoize results.
      */
     private void extractKeyCols() {
-        for (String keyCol: kuduKeyCols.split(KuduConstants.KUDU_KEY_COLS_DELIMITER)){
+        for (String keyCol : kuduKeyCols.split(
+                KuduConstants.KUDU_KEY_COLS_DELIMITER)) {
             keyColLookup.add(keyCol);
         }
     }
 
 
     /**
-     * Convert comma separated list of partition cols to a list of strings
+     * Convert comma separated list of partition cols to a list of strings.
      */
     private List<String> getPartitionKeyCols(String columns) {
         String[] cols = columns.split(KuduConstants.KUDU_KEY_COLS_DELIMITER);
         List<String> partitionColList = new ArrayList<String>(cols.length);
-        for (String col : cols){
+        for (String col : cols) {
             LOG.info("Adding partition column: " + col);
             partitionColList.add(col);
         }
