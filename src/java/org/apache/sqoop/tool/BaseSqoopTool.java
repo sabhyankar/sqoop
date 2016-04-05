@@ -212,6 +212,9 @@ public abstract class BaseSqoopTool extends com.cloudera.sqoop.tool.SqoopTool {
   public static final String KUDU_CREATE_TABLE_ARG = "kudu-create-table";
   public static final String KUDU_MASTER_URL_ARG = "kudu-master-url";
   public static final String KUDU_KEY_COLS_ARG = "kudu-key-cols";
+  public static final String KUDU_PARTITION_COLS_ARGS = "kudu-partition-cols";
+  public static final String KUDU_PARTITION_BUCKETS_ARGS = "kudu-partition-buckets";
+  public static final String KUDU_REPLICA_COUNT_ARGS = "kudu-replica-count";
 
 
   // Arguments for the saved job management system.
@@ -911,24 +914,45 @@ public abstract class BaseSqoopTool extends com.cloudera.sqoop.tool.SqoopTool {
 	        new RelatedOptions("Kudu arguments");
 	    kuduOpts.addOption(OptionBuilder.withArgName("table")
 	        .hasArg()
-	        .withDescription("Import to <table> in Kudu")
+	        .withDescription("Import to <table>")
 	        .withLongOpt(KUDU_TABLE_ARG)
 	        .create());	 
 	    kuduOpts.addOption(OptionBuilder
-	        .withDescription("If specified, create missing Kudu tables")
+	        .withDescription("Create kudu <table>")
 	        .withLongOpt(KUDU_CREATE_TABLE_ARG)
 	        .create());
-        kuduOpts.addOption(OptionBuilder.withArgName("kudu_key_cols")
+        kuduOpts.addOption(OptionBuilder.withArgName("keys")
             .hasArg()
-            .withDescription("Comma separated list of key columns")
+            .withDescription("Key column list")
             .withLongOpt(KUDU_KEY_COLS_ARG)
             .create()
         );
-	    kuduOpts.addOption(OptionBuilder.withArgName("master_url")
+	    kuduOpts.addOption(OptionBuilder.withArgName("URL")
 	    		.hasArg()
-	    		.withDescription("Kudu Master URL to connect to")
+	    		.withDescription("Kudu Master URL")
 	    		.withLongOpt(KUDU_MASTER_URL_ARG)
 	    		.create());
+        kuduOpts.addOption(OptionBuilder.withArgName("partition_cols")
+                .hasArg()
+                .isRequired(false)
+                .withDescription("Partition column list")
+                .withLongOpt(KUDU_PARTITION_COLS_ARGS)
+                .create()
+        );
+        kuduOpts.addOption(OptionBuilder.withArgName("buckets")
+                .hasArg()
+                .isRequired(false)
+                .withDescription("Hash partition buckets")
+                .withLongOpt(KUDU_PARTITION_BUCKETS_ARGS)
+                .create()
+        );
+        kuduOpts.addOption(OptionBuilder.withArgName("replica_count")
+                .hasArg()
+                .isRequired(false)
+                .withDescription("Number of replicas")
+                .withLongOpt(KUDU_REPLICA_COUNT_ARGS)
+                .create()
+        );
 
 	    return kuduOpts;
 	  }
@@ -950,6 +974,19 @@ protected void applyKuduOptions(CommandLine in, SqoopOptions out) {
         if (in.hasOption(KUDU_KEY_COLS_ARG)) {
           out.setKuduKeyCols(in.getOptionValue(KUDU_KEY_COLS_ARG));
         }
+
+        if (in.hasOption(KUDU_PARTITION_COLS_ARGS)) {
+          out.setKuduPartitionCols(in.getOptionValue(KUDU_PARTITION_COLS_ARGS));
+        }
+
+        if (in.hasOption(KUDU_PARTITION_BUCKETS_ARGS)) {
+          out.setKuduPartitionBuckets(in.getOptionValue(KUDU_PARTITION_BUCKETS_ARGS));
+        }
+
+        if (in.hasOption(KUDU_REPLICA_COUNT_ARGS)) {
+          out.setKuduReplicaCount(in.getOptionValue(KUDU_REPLICA_COUNT_ARGS));
+        }
+
 	  }
 
   @SuppressWarnings("static-access")

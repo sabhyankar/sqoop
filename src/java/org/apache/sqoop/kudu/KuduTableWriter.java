@@ -199,8 +199,6 @@ public class KuduTableWriter {
             }
 
 
-
-            // TODO add for compression type, encodin
             ColumnSchema columnSchema = new ColumnSchema.ColumnSchemaBuilder(col,kuduColType)
                     .key(isKeyColumn)
                     .nullable(isNullable)
@@ -224,17 +222,22 @@ public class KuduTableWriter {
                 printSchema(schema);
             }
 
-            // TODO modify createTable to use CreateTableOptions
             CreateTableOptions createTableOptions = new CreateTableOptions();
-            createTableOptions.setNumReplicas(KuduConstants.KUDU_DEFAULT_NUM_REPLICAS);
-            List<String> hashPartitionColumns = new ArrayList<String>(schema.getPrimaryKeyColumnCount());
 
-            for (ColumnSchema columnSchema : schema.getPrimaryKeyColumns()) {
-                LOG.debug("Adding " + columnSchema.getName() + " to hash partition columns");
-                hashPartitionColumns.add(columnSchema.getName());
+            // Set a replica count only if user explicity calls for it using
+            // --kudu-replica-count
+            // otherwise Kudu will pick the system default
+            if (opts.getKuduReplicaCount() != null) {
+                int replicaCount = Integer.parseInt(opts.getKuduReplicaCount());
+                LOG.warn("Setting Kudu replica count to " + replicaCount);
+                createTableOptions.setNumReplicas(replicaCount);
             }
-            createTableOptions.addHashPartitions(hashPartitionColumns,KuduConstants.KUDU_DEFAULT_NO_OF_BUCKETS);
 
+            List<String> hashPartitionColumns =
+                    getPartitionKeyCols(opts.getKuduPartitionCols());
+            int kuduPartitionBuckets = Integer.parseInt(opts.getKuduPartitionBuckets());
+
+            createTableOptions.addHashPartitions(hashPartitionColumns,kuduPartitionBuckets);
             kuduClient.createTable(outputTable,schema,createTableOptions);
 
         } catch (Exception e) {
@@ -264,6 +267,20 @@ public class KuduTableWriter {
         for (String keyCol: kuduKeyCols.split(KuduConstants.KUDU_KEY_COLS_DELIMITER)){
             keyColLookup.add(keyCol);
         }
+    }
+
+
+    /**
+     * Convert comma separated list of partition cols to a list of strings
+     */
+    private List<String> getPartitionKeyCols(String columns) {
+        String[] cols = columns.split(KuduConstants.KUDU_KEY_COLS_DELIMITER);
+        List<String> partitionColList = new ArrayList<String>(cols.length);
+        for (String col : cols){
+            LOG.info("Adding partition column: " + col);
+            partitionColList.add(col);
+        }
+        return partitionColList;
     }
 
 }

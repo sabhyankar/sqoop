@@ -341,6 +341,15 @@ public class SqoopOptions implements Cloneable {
 
   //Kudu key cols
   @StoredAsProperty("kudu.key.cols") private String kuduKeyCols;
+
+  //Kudu partition cols
+  @StoredAsProperty("kudu.partition.cols") private String kuduPartitionCols;
+
+  //Kudu partitions buckets
+  @StoredAsProperty("kudu.partition.buckets") private String kuduPartitionBuckets;
+
+  //Kudu number of replicas
+  @StoredAsProperty("kudu.replica.count") private String kuduReplicaCount;
   
 
   // These next two fields are not serialized to the metastore.
@@ -2696,5 +2705,41 @@ public class SqoopOptions implements Cloneable {
      * Sets the Kudu key cols
      */
     public void setKuduKeyCols(String kuduKeyCols) { this.kuduKeyCols = kuduKeyCols; }
+
+    /**
+    * Gets the target Kudu table partition columns
+    */
+    public String getKuduPartitionCols() { return this.kuduPartitionCols; }
+
+    /**
+    * Sets the Kudu partition cols
+    */
+    public void setKuduPartitionCols(String kuduPartitionCols) {
+      this.kuduPartitionCols = kuduPartitionCols;
+    }
+
+    /**
+     * Gets the target Kudu table partition buckets
+     */
+    public String getKuduPartitionBuckets() { return this.kuduPartitionBuckets; }
+
+    /**
+     * Sets the Kudu partition buckets
+     */
+    public void setKuduPartitionBuckets(String kuduPartitionBuckets) {
+      this.kuduPartitionBuckets = kuduPartitionBuckets;
+    }
+
+    /**
+     * Gets the target Kudu table replica count
+     */
+    public String getKuduReplicaCount() { return this.kuduReplicaCount; }
+
+    /**
+     * Sets the Kudu replica count
+     */
+    public void setKuduReplicaCount(String kuduReplicaCount) {
+      this.kuduReplicaCount = kuduReplicaCount;
+    }
 
 }

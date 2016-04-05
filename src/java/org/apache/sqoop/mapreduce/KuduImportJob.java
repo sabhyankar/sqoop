@@ -27,6 +27,7 @@ import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.OutputFormat;
+import org.apache.sqoop.kudu.KuduConstants;
 import org.apache.sqoop.kudu.KuduMutationProcessor;
 import org.apache.sqoop.kudu.KuduTableWriter;
 import org.apache.sqoop.kudu.KuduUtil;
@@ -165,10 +166,32 @@ public class KuduImportJob extends DataDrivenImportJob {
 						);
 					}
 
-					if ( opts.getKuduKeyCols() == null &&
+					if (opts.getKuduKeyCols() == null &&
 							kuduRowKeyCols != null) {
 						LOG.info("Setting Kudu row key cols to: " + kuduRowKeyCols);
 						opts.setKuduKeyCols(kuduRowKeyCols);
+					}
+
+					// If partition columns are not specified
+					// use the row-key-cols as the partition-cols
+					if (opts.getKuduPartitionCols() == null) {
+						LOG.warn("--kudu-partition-cols not specified " +
+								".. Defaulting to the row key cols");
+						opts.setKuduPartitionCols(opts.getKuduKeyCols());
+					}
+
+					// If number of buckets is not specified
+					// use the default
+					if (opts.getKuduPartitionBuckets() == null) {
+						LOG.warn("--kudu-partition-buckets not specified " +
+								".. Defaulting to " + KuduConstants.KUDU_DEFAULT_NO_OF_BUCKETS);
+						opts.setKuduPartitionBuckets(
+								Integer.toString(KuduConstants.KUDU_DEFAULT_NO_OF_BUCKETS)
+						);
+					} else {
+						LOG.info("Setting Kudu partition buckets to " +
+								opts.getKuduPartitionBuckets()
+						);
 					}
 
 					// Create the table.
