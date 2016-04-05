@@ -19,6 +19,7 @@
 package org.apache.sqoop.mapreduce;
 
 import java.io.IOException;
+
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.sqoop.lib.SqoopRecord;
@@ -27,16 +28,13 @@ import org.apache.sqoop.lib.SqoopRecord;
  * Imports records by writing them to Kudu via the DelegatingOutputFormat
  * and the KuduPutProcessor.
  */
-public class KuduImportMapper 
-	extends AutoProgressMapper 
-	<LongWritable, SqoopRecord, SqoopRecord, NullWritable > {
+public class KuduImportMapper
+    extends AutoProgressMapper<LongWritable,
+    SqoopRecord, SqoopRecord, NullWritable> {
 
   @Override
-  public void map(LongWritable key, SqoopRecord val, Context context) 
-		  throws IOException, InterruptedException {
-	  context.write(val, NullWritable.get());
+  public void map(LongWritable key, SqoopRecord val, Context context)
+      throws IOException, InterruptedException {
+    context.write(val, NullWritable.get());
   }
-	
-	
-
 }

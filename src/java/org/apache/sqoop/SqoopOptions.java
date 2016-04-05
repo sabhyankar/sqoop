@@ -329,28 +329,34 @@ public class SqoopOptions implements Cloneable {
   // Use single mapper for non-primary key tables without
   // explicit split by cols
   @StoredAsProperty("reset.onemapper") private boolean autoResetToOneMapper;
-  
+
   //Kudu table to import into
-  @StoredAsProperty("kudu.table") private String kuduTable;
-  
+  @StoredAsProperty("kudu.table")
+  private String kuduTable;
+
   // if true, create the Kudu table based on the source table
-  @StoredAsProperty("kudu.create.table") private boolean kuduCreateTable;
-  
+  @StoredAsProperty("kudu.create.table")
+  private boolean kuduCreateTable;
+
   //Kudu master URL
-  @StoredAsProperty("kudu.master.url") private String kuduMasterURL;
+  @StoredAsProperty("kudu.master.url")
+  private String kuduMasterUrl;
 
   //Kudu key cols
-  @StoredAsProperty("kudu.key.cols") private String kuduKeyCols;
+  @StoredAsProperty("kudu.key.cols")
+  private String kuduKeyCols;
 
   //Kudu partition cols
-  @StoredAsProperty("kudu.partition.cols") private String kuduPartitionCols;
+  @StoredAsProperty("kudu.partition.cols")
+  private String kuduPartitionCols;
 
   //Kudu partitions buckets
-  @StoredAsProperty("kudu.partition.buckets") private String kuduPartitionBuckets;
+  @StoredAsProperty("kudu.partition.buckets")
+  private String kuduPartitionBuckets;
 
   //Kudu number of replicas
-  @StoredAsProperty("kudu.replica.count") private String kuduReplicaCount;
-  
+  @StoredAsProperty("kudu.replica.count")
+  private String kuduReplicaCount;
 
   // These next two fields are not serialized to the metastore.
   // If this SqoopOptions is created by reading a saved job, these will
@@ -2645,101 +2651,110 @@ public class SqoopOptions implements Cloneable {
     this.customToolOptions = customToolOptions;
   }
 
-    public String getToolName() {
-        return this.toolName;
-    }
+  public String getToolName() {
+    return this.toolName;
+  }
 
-    public void setToolName(String toolName) {
-        this.toolName = toolName;
-    }
-    
-    /**
-     * Set whether we should create missing Kudu tables.
-     */
-    public void setCreateKuduTable(boolean create) {
-      this.kuduCreateTable = create;
-    }
+  public void setToolName(String toolName) {
+    this.toolName = toolName;
+  }
 
-    /**
-     * Returns true if we should create Kudu tables
-     * that are missing.
-     */
-    public boolean getCreateKuduTable() {
-      return this.kuduCreateTable;
-    }
-    
-    /**
-     * Gets the target Kudu table name, if any.
-     */
-    public String getKuduTable() {
-      return this.kuduTable;
-    }
+  /**
+   * Set whether we should create missing Kudu tables.
+   */
+  public void setCreateKuduTable(boolean create) {
+    this.kuduCreateTable = create;
+  }
 
-    /**
-     * Sets the target Kudu table name for an import.
-     */
-    public void setKuduTable(String table) {
-      this.kuduTable = table;
-    }
-    
-    /**
-     * Sets the kudu master url
-     */
-    public void setKuduURL(String URL) {
-    	this.kuduMasterURL = URL;
-    }
+  /**
+   * Returns true if we should create Kudu tables
+   * that are missing.
+   */
+  public boolean getCreateKuduTable() {
+    return this.kuduCreateTable;
+  }
 
-    /*
-     * Gets the Kudu master url
-     */
-    public String getKuduURL() {
-    	return this.kuduMasterURL;
-    }
+  /**
+   * Gets the target Kudu table name, if any.
+   */
+  public String getKuduTable() {
+    return this.kuduTable;
+  }
 
-    /**
-     * Gets the target Kudu table key columns
-     */
-    public String getKuduKeyCols() { return this.kuduKeyCols; }
+  /**
+   * Sets the target Kudu table name for an import.
+   */
+  public void setKuduTable(String table) {
+    this.kuduTable = table;
+  }
 
-    /**
-     * Sets the Kudu key cols
-     */
-    public void setKuduKeyCols(String kuduKeyCols) { this.kuduKeyCols = kuduKeyCols; }
+  /**
+   * Sets the kudu master url.
+   */
+  public void setKuduURL(String url) {
+    this.kuduMasterUrl = url;
+  }
 
-    /**
-    * Gets the target Kudu table partition columns
-    */
-    public String getKuduPartitionCols() { return this.kuduPartitionCols; }
+  /**
+   * Gets the Kudu master url.
+   */
+  public String getKuduURL() {
+    return this.kuduMasterUrl;
+  }
 
-    /**
-    * Sets the Kudu partition cols
-    */
-    public void setKuduPartitionCols(String kuduPartitionCols) {
-      this.kuduPartitionCols = kuduPartitionCols;
-    }
+  /**
+   * Gets the target Kudu table key columns.
+   */
+  public String getKuduKeyCols() {
+    return this.kuduKeyCols;
+  }
 
-    /**
-     * Gets the target Kudu table partition buckets
-     */
-    public String getKuduPartitionBuckets() { return this.kuduPartitionBuckets; }
+  /**
+   * Sets the Kudu key cols.
+   */
+  public void setKuduKeyCols(String kuduKeyCols) {
+    this.kuduKeyCols = kuduKeyCols;
+  }
 
-    /**
-     * Sets the Kudu partition buckets
-     */
-    public void setKuduPartitionBuckets(String kuduPartitionBuckets) {
-      this.kuduPartitionBuckets = kuduPartitionBuckets;
-    }
+  /**
+   * Gets the target Kudu table partition columns.
+   */
+  public String getKuduPartitionCols() {
+    return this.kuduPartitionCols;
+  }
 
-    /**
-     * Gets the target Kudu table replica count
-     */
-    public String getKuduReplicaCount() { return this.kuduReplicaCount; }
+  /**
+   * Sets the Kudu partition cols.
+   */
+  public void setKuduPartitionCols(String kuduPartitionCols) {
+    this.kuduPartitionCols = kuduPartitionCols;
+  }
 
-    /**
-     * Sets the Kudu replica count
-     */
-    public void setKuduReplicaCount(String kuduReplicaCount) {
-      this.kuduReplicaCount = kuduReplicaCount;
-    }
+  /**
+   * Gets the target Kudu table partition buckets.
+   */
+  public String getKuduPartitionBuckets() {
+    return this.kuduPartitionBuckets;
+  }
 
+  /**
+   * Sets the Kudu partition buckets.
+   */
+  public void setKuduPartitionBuckets(String kuduPartitionBuckets) {
+    this.kuduPartitionBuckets = kuduPartitionBuckets;
+  }
+
+  /**
+   * Gets the target Kudu table replica count.
+   */
+  public String getKuduReplicaCount() {
+    return this.kuduReplicaCount;
+  }
+
+  /**
+   * Sets the Kudu replica count.
+   */
+  public void setKuduReplicaCount(String kuduReplicaCount) {
+    this.kuduReplicaCount = kuduReplicaCount;
+  }
 }

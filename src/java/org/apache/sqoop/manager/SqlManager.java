@@ -682,13 +682,13 @@ public abstract class SqlManager
              + "classpath, cannot import to Accumulo!");
        }
        importer = new AccumuloImportJob(opts, context);
-    } else if ( opts.getKuduTable() != null) {
-    	// Import to Kudu
-    	if (!KuduUtil.isKuduJarPresent()) {
-    		throw new ImportException("Kudu jars are not present in "
-    		 + "classpath, cannot import to Kudu");
-    	}
-    	importer = new KuduImportJob(opts, context);
+    } else if (opts.getKuduTable() != null) {
+      // Import to Kudu
+      if (!KuduUtil.isKuduJarPresent()) {
+        throw new ImportException("Kudu jars are not present in "
+            + "classpath, cannot import to Kudu");
+      }
+      importer = new KuduImportJob(opts, context);
     } else {
       // Import to HDFS.
       importer = new DataDrivenImportJob(opts, context.getInputFormat(),
@@ -733,14 +733,13 @@ public abstract class SqlManager
       }
       importer = new AccumuloImportJob(opts, context);
     } else if (opts.getKuduTable() != null) {
-    	//Import to Kudu
-    	if (!KuduUtil.isKuduJarPresent()) {
-    		throw new ImportException("Kudu jars are not present in classpath,"
-    		 + " cannot import to Kudu");
-    	}
-    	importer = new KuduImportJob(opts, context);
-    }
-    else {
+      //Import to Kudu
+      if (!KuduUtil.isKuduJarPresent()) {
+        throw new ImportException("Kudu jars are not present in classpath,"
+            + " cannot import to Kudu");
+      }
+      importer = new KuduImportJob(opts, context);
+    } else {
       // Import to HDFS.
       importer = new DataDrivenImportJob(opts, context.getInputFormat(),
           context);

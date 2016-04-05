@@ -24,17 +24,21 @@ package org.apache.sqoop.kudu;
  */
 public final class KuduConstants {
 
-    /** Kudu key column delimiter to use by default. */
-    public static final String KUDU_KEY_COLS_DELIMITER = ",";
+  /** Kudu key column delimiter to use by default. */
+  public static final String KUDU_KEY_COLS_DELIMITER = ",";
 
 
-    /** Should columns be set to Nullable by default. */
-    public static final boolean KUDU_SET_NULLABLE_COLUMN_ALWAYS = true;
+  /** Should columns be set to Nullable by default. */
+  public static final boolean KUDU_SET_NULLABLE_COLUMN_ALWAYS = true;
 
-    /** Number of replicas to use by default for Kudu table. */
-    public static final int KUDU_DEFAULT_NUM_REPLICAS = 3;
+  /** Number of replicas to use by default for Kudu table. */
+  public static final int KUDU_DEFAULT_NUM_REPLICAS = 3;
 
-    /** Number of buckets to use by default for Kudu table. */
-    public static final int KUDU_DEFAULT_NO_OF_BUCKETS = 3;
+  /** Number of buckets to use by default for Kudu table. */
+  public static final int KUDU_DEFAULT_NO_OF_BUCKETS = 3;
+
+  //Prevent instantiation.
+  private KuduConstants() {
+  }
 
 }

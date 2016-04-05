@@ -912,49 +912,48 @@ public abstract class BaseSqoopTool extends com.cloudera.sqoop.tool.SqoopTool {
 
   protected RelatedOptions getKuduOptions() {
     RelatedOptions kuduOpts =
-            new RelatedOptions("Kudu arguments");
+        new RelatedOptions("Kudu arguments");
     kuduOpts.addOption(OptionBuilder.withArgName("table")
-            .hasArg()
-            .withDescription("Import to <table>")
-            .withLongOpt(KUDU_TABLE_ARG)
-            .create());
+        .hasArg()
+        .withDescription("Import to <table>")
+        .withLongOpt(KUDU_TABLE_ARG)
+        .create());
     kuduOpts.addOption(OptionBuilder
-            .withDescription("Create kudu <table>")
-            .withLongOpt(KUDU_CREATE_TABLE_ARG)
-            .create());
+        .withDescription("Create kudu <table>")
+        .withLongOpt(KUDU_CREATE_TABLE_ARG)
+        .create());
     kuduOpts.addOption(OptionBuilder.withArgName("keys")
-            .hasArg()
-            .withDescription("Key column list")
-            .withLongOpt(KUDU_KEY_COLS_ARG)
-            .create()
+        .hasArg()
+        .withDescription("Key column list")
+        .withLongOpt(KUDU_KEY_COLS_ARG)
+        .create()
     );
     kuduOpts.addOption(OptionBuilder.withArgName("URL")
-            .hasArg()
-            .withDescription("Kudu Master URL")
-            .withLongOpt(KUDU_MASTER_URL_ARG)
-            .create());
+        .hasArg()
+        .withDescription("Kudu Master URL")
+        .withLongOpt(KUDU_MASTER_URL_ARG)
+        .create());
     kuduOpts.addOption(OptionBuilder.withArgName("partition_cols")
-            .hasArg()
-            .isRequired(false)
-            .withDescription("Partition column list")
-            .withLongOpt(KUDU_PARTITION_COLS_ARGS)
-            .create()
+        .hasArg()
+        .isRequired(false)
+        .withDescription("Partition column list")
+        .withLongOpt(KUDU_PARTITION_COLS_ARGS)
+        .create()
     );
     kuduOpts.addOption(OptionBuilder.withArgName("buckets")
-            .hasArg()
-            .isRequired(false)
-            .withDescription("Hash partition buckets")
-            .withLongOpt(KUDU_PARTITION_BUCKETS_ARGS)
-            .create()
+        .hasArg()
+        .isRequired(false)
+        .withDescription("Hash partition buckets")
+        .withLongOpt(KUDU_PARTITION_BUCKETS_ARGS)
+        .create()
     );
     kuduOpts.addOption(OptionBuilder.withArgName("replica_count")
-            .hasArg()
-            .isRequired(false)
-            .withDescription("Number of replicas")
-            .withLongOpt(KUDU_REPLICA_COUNT_ARGS)
-            .create()
+        .hasArg()
+        .isRequired(false)
+        .withDescription("Number of replicas")
+        .withLongOpt(KUDU_REPLICA_COUNT_ARGS)
+        .create()
     );
-
     return kuduOpts;
   }
 
@@ -962,32 +961,25 @@ public abstract class BaseSqoopTool extends com.cloudera.sqoop.tool.SqoopTool {
     if (in.hasOption(KUDU_TABLE_ARG)) {
       out.setKuduTable(in.getOptionValue(KUDU_TABLE_ARG));
     }
-
-
     if (in.hasOption(KUDU_CREATE_TABLE_ARG)) {
       out.setCreateKuduTable(true);
     }
-
     if (in.hasOption(KUDU_MASTER_URL_ARG)) {
       out.setKuduURL(in.getOptionValue(KUDU_MASTER_URL_ARG));
     }
-
     if (in.hasOption(KUDU_KEY_COLS_ARG)) {
       out.setKuduKeyCols(in.getOptionValue(KUDU_KEY_COLS_ARG));
     }
-
     if (in.hasOption(KUDU_PARTITION_COLS_ARGS)) {
       out.setKuduPartitionCols(in.getOptionValue(KUDU_PARTITION_COLS_ARGS));
     }
-
     if (in.hasOption(KUDU_PARTITION_BUCKETS_ARGS)) {
-      out.setKuduPartitionBuckets(in.getOptionValue(KUDU_PARTITION_BUCKETS_ARGS));
+      out.setKuduPartitionBuckets(
+          in.getOptionValue(KUDU_PARTITION_BUCKETS_ARGS));
     }
-
     if (in.hasOption(KUDU_REPLICA_COUNT_ARGS)) {
       out.setKuduReplicaCount(in.getOptionValue(KUDU_REPLICA_COUNT_ARGS));
     }
-
   }
 
   @SuppressWarnings("static-access")
@@ -1759,27 +1751,27 @@ public abstract class BaseSqoopTool extends com.cloudera.sqoop.tool.SqoopTool {
   }
 
   protected void validateKuduOptions(SqoopOptions options)
-          throws InvalidOptionsException {
-    if (options.getKuduTable() != null &&
-            options.getKuduURL() == null) {
+      throws InvalidOptionsException {
+    if (options.getKuduTable() != null
+        && options.getKuduURL() == null) {
       throw new InvalidOptionsException(
-              "--kudu-master-url is a required field."
-                      + HELP_STR);
+          "--kudu-master-url is a required field."
+              + HELP_STR);
     }
 
-    if (options.getKuduURL() != null &&
-            options.getKuduTable() == null) {
+    if (options.getKuduURL() != null
+        && options.getKuduTable() == null) {
       throw new InvalidOptionsException(
-              "--kudu-table is a required field"
-                      + HELP_STR);
+          "--kudu-table is a required field"
+              + HELP_STR);
     }
 
-    if (options.getCreateKuduTable() &&
-            options.getKuduKeyCols() == null) {
-      LOG.warn("--kudu-key-cols not set with --kudu-create-table option " +
-              "Will try and extract key columns from " +
-              "split-by-key or source table " +
-              "Primary Key");
+    if (options.getCreateKuduTable()
+        && options.getKuduKeyCols() == null) {
+      LOG.warn("--kudu-key-cols not set with --kudu-create-table option "
+          + "Will try and extract key columns from "
+          + "split-by-key or source table "
+          + "Primary Key");
     }
   }
 

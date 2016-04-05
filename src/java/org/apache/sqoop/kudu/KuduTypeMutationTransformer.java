@@ -34,84 +34,84 @@ import org.kududb.Schema;
 import org.kududb.Type;
 
 /**
- * MutationTransformer that generate Insert operations for Kudu
+ * MutationTransformer that generate Insert operations for Kudu.
  */
 public class KuduTypeMutationTransformer extends MutationTransformer {
-	
-	public static final Log LOG = LogFactory
-			.getLog(KuduTypeMutationTransformer.class.getName());
+
+  public static final Log LOG = LogFactory
+      .getLog(KuduTypeMutationTransformer.class.getName());
 
 
-	public KuduTypeMutationTransformer() {
-	}
+  public KuduTypeMutationTransformer() {
+  }
 
-    /**
-     * Generates a list of Input operations for Kudu.
-     * @param fields
-     *            a map of field names to values to insert.
-     * @return
-     * @throws IOException
-     */
-	@Override
-	public List<Insert> getInsertCommand(Map<String, Object> fields) 
-			throws IOException {
-		
-		KuduTable table = getKuduTable();
-		Schema schema = table.getSchema();
-		List<ColumnSchema> columnSchemaList = schema.getColumns();
-		Map<String, Type> columnTypeMap = new HashMap<String, Type>();
-		Insert insert = table.newInsert();
-		PartialRow row = insert.getRow();
-		
-		for (ColumnSchema columnSchema: columnSchemaList) {
-			columnTypeMap.put(columnSchema.getName(), columnSchema.getType());
-		}
-		
-		for (Map.Entry<String, Object> fieldEntry: fields.entrySet()) {
-			
-			String colName = fieldEntry.getKey();
-			if (!columnTypeMap.containsKey(colName)) {
-				throw new IOException("Could not find column  " + colName +
-				          " of type in table " + table.getName());
-			}
-			Type columnType = columnTypeMap.get(colName);
-			Object val = fieldEntry.getValue();
-			
-	
-			
-			switch(columnType.getName()) {
-			case "binary":
-				row.addBinary(colName, (byte[])val);
-				break;
-			case "bool":
-				row.addBoolean(colName, (boolean) val);
-				break;
-			case "double":
-				row.addDouble(colName, (Double) val);
-				break;
-			case "float":
-				row.addFloat(colName, (Float) val);
-				break;
-			case "int16":				
-			case "int32":			
-			case "int64":			
-			case "int8":
-				row.addInt(colName, (int) val);
-				break;
-			case "string":
-				row.addString(colName, (String) val);
-				break;
-			case "timestamp":
-				row.addLong(colName, ((java.sql.Timestamp) val).getTime());
-				break;
-			default:
-				LOG.error("No Mapping found for:" + colName + " for type: " + columnType.getName());
-				
-			}			
-		}
-		
-		return Collections.singletonList(insert);
-	}
+  /**
+   * Generates a list of Insert operations for Kudu.
+   * @param fields
+   *            a map of field names to values to insert.
+   * @return A collection of Insert operations.
+   * @throws IOException
+   */
+  @Override
+  public List<Insert> getInsertCommand(Map<String, Object> fields)
+      throws IOException {
 
-	
+    KuduTable table = getKuduTable();
+    Schema schema = table.getSchema();
+    List<ColumnSchema> columnSchemaList = schema.getColumns();
+    Map<String, Type> columnTypeMap = new HashMap<String, Type>();
+    Insert insert = table.newInsert();
+    PartialRow row = insert.getRow();
+
+    for (ColumnSchema columnSchema : columnSchemaList) {
+      columnTypeMap.put(columnSchema.getName(), columnSchema.getType());
+    }
+
+    for (Map.Entry<String, Object> fieldEntry : fields.entrySet()) {
+
+      String colName = fieldEntry.getKey();
+      if (!columnTypeMap.containsKey(colName)) {
+        throw new IOException("Could not find column  " + colName
+            + " of type in table " + table.getName());
+      }
+      Type columnType = columnTypeMap.get(colName);
+      Object val = fieldEntry.getValue();
+
+
+      switch (columnType.getName()) {
+        case "binary":
+          row.addBinary(colName, (byte[]) val);
+          break;
+        case "bool":
+          row.addBoolean(colName, (boolean) val);
+          break;
+        case "double":
+          row.addDouble(colName, (Double) val);
+          break;
+        case "float":
+          row.addFloat(colName, (Float) val);
+          break;
+        case "int16":
+        case "int32":
+        case "int64":
+        case "int8":
+          row.addInt(colName, (int) val);
+          break;
+        case "string":
+          row.addString(colName, (String) val);
+          break;
+        case "timestamp":
+          row.addLong(colName, ((java.sql.Timestamp) val).getTime());
+          break;
+        default:
+          LOG.error("No Mapping found for:" + colName
+              + " for type: " + columnType.getName());
+
+      }
+    }
+
+    return Collections.singletonList(insert);
+  }
+
+
 }

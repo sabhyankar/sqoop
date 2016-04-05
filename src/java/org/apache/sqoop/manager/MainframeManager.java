@@ -90,12 +90,12 @@ public class MainframeManager extends com.cloudera.sqoop.manager.ConnManager {
             + "classpath, cannot import to Accumulo!");
       }
       importer = new AccumuloImportJob(opts, context);
-    } else if (opts.getKuduTable() != null ) {
-    	if (!KuduUtil.isKuduJarPresent()) {
-    		throw new ImportException("Kudu jars are not present in "
-    		+ "classpath, cannot import to Kudu!");
-    	}
-    	importer = new KuduImportJob(opts, context);
+    } else if (opts.getKuduTable() != null) {
+      if (!KuduUtil.isKuduJarPresent()) {
+        throw new ImportException("Kudu jars are not present in "
+            + "classpath, cannot import to Kudu!");
+      }
+      importer = new KuduImportJob(opts, context);
     } else {
       // Import to HDFS.
       importer = new MainframeImportJob(opts, context);

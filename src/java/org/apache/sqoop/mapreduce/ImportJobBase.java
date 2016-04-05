@@ -239,11 +239,10 @@ public class ImportJobBase extends JobBase {
       throw new IOException("Direct mode is incompatible with "
             + "HBase. Please remove the parameter --direct");
     }
-   
     if (options.getKuduTable() != null && options.isDirect()
-            && !getContext().getConnManager().isDirectModeKuduSupported()) {
-          throw new IOException("Direct mode is incompatible with "
-                + "Kudu. Please remove the parameter --direct");
+        && !getContext().getConnManager().isDirectModeKuduSupported()) {
+      throw new IOException("Direct mode is incompatible with "
+          + "Kudu. Please remove the parameter --direct");
     }
     if (null != tableName) {
       LOG.info("Beginning import of " + tableName);

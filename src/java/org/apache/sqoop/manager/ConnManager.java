@@ -293,8 +293,9 @@ public abstract class ConnManager {
 
   /**
    * Resolve a database-specific type to Kudu data type.
-   * @param sqlType     sql type
-   * @return            hive type
+   *
+   * @param sqlType sql type
+   * @return hive type
    */
   public org.kududb.Type toKuduType(int sqlType) {
     return KuduTypes.toKuduType(sqlType);
@@ -302,12 +303,14 @@ public abstract class ConnManager {
 
   /**
    * Return Kudu type for SQL type.
-   * @param tableName   table name
-   * @param columnName  column name
-   * @param sqlType     sql type
-   * @return            hive type
+   *
+   * @param tableName  table name
+   * @param columnName column name
+   * @param sqlType    sql type
+   * @return hive type
    */
-  public org.kududb.Type toKuduType(String tableName, String columnName, int sqlType) {
+  public org.kududb.Type toKuduType(String tableName, String columnName,
+                                    int sqlType) {
     // ignore table name and column name by default.
     return toKuduType(sqlType);
   }
@@ -885,12 +888,12 @@ public abstract class ConnManager {
 
   /**
    * Determine if Kudu operations from direct mode of the connector is
-   * allowed.  By default direct mode is not compatible with Kudu
+   * allowed.  By default direct mode is not compatible with Kudu.
+   *
    * @return Whether direct mode is allowed.
    */
   public boolean isDirectModeKuduSupported() {
     return false;
   }
-  
 }
 

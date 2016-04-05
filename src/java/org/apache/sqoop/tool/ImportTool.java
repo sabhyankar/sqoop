@@ -1007,7 +1007,7 @@ public class ImportTool extends com.cloudera.sqoop.tool.BaseSqoopTool {
       applyHBaseOptions(in, out);
       applyHCatalogOptions(in, out);
       applyAccumuloOptions(in, out);
-      applyKuduOptions(in,out);
+      applyKuduOptions(in, out);
 
     } catch (NumberFormatException nfe) {
       throw new InvalidOptionsException("Error: expected numeric argument.\n"
