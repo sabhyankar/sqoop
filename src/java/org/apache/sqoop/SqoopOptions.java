@@ -190,6 +190,7 @@ public class SqoopOptions implements Cloneable {
   // User explicit mapping of types
   private Properties mapColumnJava; // stored as map.colum.java
   private Properties mapColumnHive; // stored as map.column.hive
+  private Properties mapColumnKudu; // stored as map.column.kudu
 
   // An ordered list of column names denoting what order columns are
   // serialized to a PreparedStatement from a generated record type.
@@ -700,6 +701,8 @@ public class SqoopOptions implements Cloneable {
             getPropertiesAsNetstedProperties(props, "map.column.hive");
     this.mapColumnJava =
             getPropertiesAsNetstedProperties(props, "map.column.java");
+    this.mapColumnKudu =
+        getPropertiesAsNetstedProperties(props, "map.column.kudu");
 
     // Delimiters were previously memoized; don't let the tool override
     // them with defaults.
@@ -805,6 +808,8 @@ public class SqoopOptions implements Cloneable {
             "map.column.hive", this.mapColumnHive);
     setPropertiesAsNestedProperties(props,
             "map.column.java", this.mapColumnJava);
+    setPropertiesAsNestedProperties(props,
+        "map.column.kudu", this.mapColumnKudu);
     return props;
   }
 
@@ -872,6 +877,10 @@ public class SqoopOptions implements Cloneable {
 
       if (null != mapColumnJava) {
         other.mapColumnJava = (Properties) this.mapColumnJava.clone();
+      }
+
+      if (null != mapColumnKudu) {
+        other.mapColumnKudu = (Properties) this.mapColumnKudu.clone();
       }
 
       return other;
@@ -1031,6 +1040,7 @@ public class SqoopOptions implements Cloneable {
     // Creating instances for user specific mapping
     this.mapColumnHive = new Properties();
     this.mapColumnJava = new Properties();
+    this.mapColumnKudu = new Properties();
 
     // Set Accumulo batch size defaults, since 0 is not the same
     // as "not set"
@@ -1323,12 +1333,20 @@ public class SqoopOptions implements Cloneable {
     parseColumnMapping(mapColumn, mapColumnJava);
   }
 
+  public void setMapColumnKudu(String mapColumn) {
+    parseColumnMapping(mapColumn, mapColumnKudu);
+  }
+
   public Properties getMapColumnHive() {
     return mapColumnHive;
   }
 
   public Properties getMapColumnJava() {
     return mapColumnJava;
+  }
+
+  public Properties getMapColumnKudu() {
+    return mapColumnKudu;
   }
 
   /**

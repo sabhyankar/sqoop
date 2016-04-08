@@ -115,9 +115,13 @@ public class KuduTableWriter {
    */
   private Schema getTableSchema() throws Exception {
     Map<String, Integer> columnTypes;
+    Map<String, String> userMapping = new HashMap<String, String>();
 
-    // TODO Add a MapColumnKudu
-    Properties userMapping = opts.getMapColumnHive();
+    // Get user specified column mapping if any
+    for (Map.Entry<Object, Object> prop : opts.getMapColumnKudu().entrySet()) {
+      userMapping.put(prop.getKey().toString().trim().toUpperCase(),
+          prop.getValue().toString().trim().toUpperCase());
+    }
 
     if (externalColTypes != null) {
       // Use pre-defined column types.
@@ -131,7 +135,6 @@ public class KuduTableWriter {
             getColumnTypesForQuery(opts.getSqlQuery());
       }
     }
-
     if (keyColLookup.isEmpty()) {
       throw new Exception(
           "Kudu create table requires at least one key column"
@@ -141,10 +144,10 @@ public class KuduTableWriter {
     String[] colNames = getColumnNames();
 
     // Check that all explicitly mapped columns are present in result set
-    for (Object column : userMapping.keySet()) {
+    for (String column : userMapping.keySet()) {
       boolean found = false;
       for (String c : colNames) {
-        if (c.equals(column)) {
+        if (c.equalsIgnoreCase(column)) {
           found = true;
           break;
         }
@@ -153,7 +156,7 @@ public class KuduTableWriter {
       if (!found) {
         throw new IllegalArgumentException(
             "No column by the name " + column
-                + "found while importing data");
+                + " found while importing data");
       }
     }
 
@@ -181,10 +184,28 @@ public class KuduTableWriter {
 
       Integer colType = columnTypes.get(col);
       Type kuduColType = null;
+      String mappedKuduColType
+          = userMapping.get(col.toUpperCase());
 
       // Does a mapping exist in user specified map?
-      // TODO
-
+      if (mappedKuduColType != null) {
+        LOG.debug("Attempting to map data type for column: "
+            + col.toUpperCase());
+        try {
+          kuduColType = Type.valueOf(mappedKuduColType);
+        } catch (IllegalArgumentException e) {
+          LOG.warn("Column " + col.toUpperCase()
+              + " cannot be mapped to type: " + mappedKuduColType);
+          LOG.warn("Only the following types are supported: ");
+          for (Type t : Type.values()) {
+            LOG.warn("      " + t.getName().toUpperCase());
+          }
+        }
+        if (kuduColType != null) {
+          LOG.info("Mapped column " + col.toUpperCase()
+              + " to type: " + kuduColType.getName().toUpperCase());
+        }
+      }
 
       if (kuduColType == null) {
         kuduColType = connMgr.toKuduType(inputTable, col, colType);
@@ -198,7 +219,7 @@ public class KuduTableWriter {
 
       if (KuduTypes.isKuduTypeImprovised(colType)) {
         LOG.warn(
-            "Column " + col
+            "Column " + col.toUpperCase()
                 + " had to be cast to a less precise type in Kudu"
         );
       }
@@ -210,7 +231,8 @@ public class KuduTableWriter {
           (isKeyColumn) ? false
               : KuduConstants.KUDU_SET_NULLABLE_COLUMN_ALWAYS;
       if (isKeyColumn) {
-        LOG.debug("Column " + col + " is marked as key column");
+        LOG.debug("Column " + col.toUpperCase()
+            + " is marked as key column");
       }
 
 

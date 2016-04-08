@@ -98,6 +98,7 @@ public abstract class BaseSqoopTool extends com.cloudera.sqoop.tool.SqoopTool {
   public static final String INPUT_NULL_NON_STRING = "input-null-non-string";
   public static final String MAP_COLUMN_JAVA = "map-column-java";
   public static final String MAP_COLUMN_HIVE = "map-column-hive";
+  public static final String MAP_COLUMN_KUDU = "map-column-kudu";
 
   public static final String FMT_SEQUENCEFILE_ARG = "as-sequencefile";
   public static final String FMT_TEXTFILE_ARG = "as-textfile";
@@ -954,6 +955,13 @@ public abstract class BaseSqoopTool extends com.cloudera.sqoop.tool.SqoopTool {
         .withLongOpt(KUDU_REPLICA_COUNT_ARGS)
         .create()
     );
+    kuduOpts.addOption(OptionBuilder
+        .hasArg()
+        .withDescription("Override mapping for specific column to hive"
+        + " types.")
+        .withLongOpt(MAP_COLUMN_KUDU)
+        .create()
+    );
     return kuduOpts;
   }
 
@@ -979,6 +987,9 @@ public abstract class BaseSqoopTool extends com.cloudera.sqoop.tool.SqoopTool {
     }
     if (in.hasOption(KUDU_REPLICA_COUNT_ARGS)) {
       out.setKuduReplicaCount(in.getOptionValue(KUDU_REPLICA_COUNT_ARGS));
+    }
+    if (in.hasOption(MAP_COLUMN_KUDU)) {
+      out.setMapColumnKudu(in.getOptionValue(MAP_COLUMN_KUDU));
     }
   }
 

@@ -91,14 +91,14 @@ public class KuduTypeMutationTransformer extends MutationTransformer {
         case "float":
           row.addFloat(colName, (Float) val);
           break;
+        case "int8":
         case "int16":
         case "int32":
         case "int64":
-        case "int8":
           row.addInt(colName, (int) val);
           break;
         case "string":
-          row.addString(colName, (String) val);
+          row.addString(colName, val.toString());
           break;
         case "timestamp":
           row.addLong(colName, ((java.sql.Timestamp) val).getTime());
