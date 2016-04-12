@@ -331,7 +331,7 @@ under the License.
     </dependency>
 
     <dependency org="org.kududb" name="kudu-client"
-      rev="${kudu.version}" conf="kudu->default">
+      rev="${kudu.version}" conf="kudu->default;redist->default">
       <artifact name="kudu-client" type="jar" />
     </dependency>
 
