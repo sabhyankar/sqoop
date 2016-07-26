@@ -170,7 +170,7 @@
         <property name="hcatalog.version" value="0.13.0" />
         <property name="hbasecompatprofile" value="2" />
         <property name="avrohadoopprofile" value="2"/>
-        <property name="kudu.version" value="0.8.0"/>
+        <property name="kudu.version" value="0.9.1"/>
       </then>
     </elseif>
 
@@ -184,7 +184,7 @@
         <property name="hcatalog.version" value="0.13.0" />
         <property name="hbasecompatprofile" value="2" />
         <property name="avrohadoopprofile" value="2" />
-        <property name="kudu.version" value="0.8.0"/>
+        <property name="kudu.version" value="0.9.1"/>
       </then>
     </elseif>
     <else>
